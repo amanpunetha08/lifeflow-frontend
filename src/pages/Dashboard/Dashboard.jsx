@@ -27,7 +27,16 @@ export default function Dashboard() {
 
   const { data: tasks = [], refetch } = useQuery({
     queryKey: ['tasks-today'],
-    queryFn: async () => (await api.get('/tasks/today/')).data,
+    queryFn: async () => {
+      // Trigger expired task processing on each load
+      await api.post('/scheduler/rules/process_expired/').catch(() => {})
+      // Refresh user profile to get updated scores
+      try {
+        const { data: profile } = await api.get('/auth/profile/')
+        setUser(profile)
+      } catch {}
+      return (await api.get('/tasks/today/')).data
+    },
   })
 
   const refreshUser = async () => {
