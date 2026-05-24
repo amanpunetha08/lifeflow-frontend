@@ -17,6 +17,7 @@ export default function CreateTaskFlow({ onCreated, compact = false }) {
     timeframe_days: 3,
     priority: 'medium',
     tags: [],
+    start_date: '',
   })
   const [existingTags, setExistingTags] = useState([])
   const [newTag, setNewTag] = useState('')
@@ -28,7 +29,7 @@ export default function CreateTaskFlow({ onCreated, compact = false }) {
 
   const reset = () => {
     setStep(STEP_NAME)
-    setForm({ title: '', task_type: '', description: '', timeframe_days: 3, priority: 'medium', tags: [] })
+    setForm({ title: '', task_type: '', description: '', timeframe_days: 3, priority: 'medium', tags: [], start_date: '' })
   }
 
   const handleSubmit = async () => {
@@ -44,6 +45,9 @@ export default function CreateTaskFlow({ onCreated, compact = false }) {
       }
       if (form.task_type === 'timeframe') {
         payload.timeframe_days = form.timeframe_days
+        if (form.start_date) {
+          payload.timeframe_start_date = form.start_date
+        }
       }
       const { data } = await api.post('/tasks/', payload)
       onCreated(data)
@@ -161,6 +165,18 @@ export default function CreateTaskFlow({ onCreated, compact = false }) {
                       className="w-full bg-dark-800 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-primary-500 transition resize-none h-16"
                       placeholder="What does this task involve?"
                     />
+                  </div>
+                  <div>
+                    <label className="text-sm text-dark-300 mb-1 block">Start date</label>
+                    <input
+                      type="date" value={form.start_date}
+                      onChange={(e) => setForm({ ...form, start_date: e.target.value })}
+                      className="w-full bg-dark-800 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-primary-500"
+                      min={new Date().toISOString().split('T')[0]}
+                    />
+                    <p className="text-xs text-dark-500 mt-1">
+                      Leave empty to start today. Pick a future date to schedule ahead.
+                    </p>
                   </div>
                   <div>
                     <label className="text-sm text-dark-300 mb-1 block">How many days to complete?</label>
