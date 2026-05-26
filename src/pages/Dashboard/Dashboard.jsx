@@ -28,9 +28,18 @@ export default function Dashboard() {
   const { data: tasks = [], refetch } = useQuery({
     queryKey: ['tasks-today'],
     queryFn: async () => {
-      // Trigger expired task processing on each load
-      await api.post('/scheduler/rules/process_expired/').catch(() => {})
-      // Refresh user profile to get updated scores
+      // Trigger expired task processing (retry once for cold starts)
+      try {
+        const res = await api.post('/scheduler/rules/process_expired/')
+        if (!res.data?.status) {
+          await api.post('/scheduler/rules/process_expired/')
+        }
+      } catch {
+        // Retry on failure (cold start)
+        await new Promise(r => setTimeout(r, 2000))
+        await api.post('/scheduler/rules/process_expired/').catch(() => {})
+      }
+      // Refresh user profile
       try {
         const { data: profile } = await api.get('/auth/profile/')
         setUser(profile)
