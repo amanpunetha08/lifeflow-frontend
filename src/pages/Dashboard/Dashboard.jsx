@@ -25,34 +25,28 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const [showOnboarding, setShowOnboarding] = useState(!user?.onboarding_completed)
 
-  const { data: tasks = [], refetch } = useQuery({
-    queryKey: ['tasks-today'],
-    queryFn: async () => {
-      // Trigger expired task processing (retry once for cold starts)
-      try {
-        const res = await api.post('/scheduler/rules/process_expired/')
-        if (!res.data?.status) {
-          await api.post('/scheduler/rules/process_expired/')
-        }
-      } catch {
-        // Retry on failure (cold start)
-        await new Promise(r => setTimeout(r, 2000))
-        await api.post('/scheduler/rules/process_expired/').catch(() => {})
-      }
-      // Refresh user profile
-      try {
-        const { data: profile } = await api.get('/auth/profile/')
-        setUser(profile)
-      } catch {}
-      return (await api.get('/tasks/today/')).data
-    },
-  })
-
   const refreshUser = async () => {
     try {
       const { data } = await api.get('/auth/profile/')
       setUser(data)
     } catch {}
+  }
+
+  const { data: tasks = [], refetch } = useQuery({
+    queryKey: ['tasks-today'],
+    queryFn: async () => (await api.get('/tasks/today/')).data,
+  })
+
+  // Run process_expired once on mount
+  const [processed, setProcessed] = useState(false)
+  if (!processed && !showOnboarding) {
+    setProcessed(true)
+    api.post('/scheduler/rules/process_expired/').catch(() => {
+      setTimeout(() => api.post('/scheduler/rules/process_expired/').catch(() => {}), 2000)
+    }).then(() => {
+      refetch()
+      refreshUser()
+    })
   }
 
   const handleTaskAction = () => {
