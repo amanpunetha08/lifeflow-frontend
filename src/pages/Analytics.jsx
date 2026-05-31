@@ -18,7 +18,8 @@ export default function Analytics() {
 
   const stats = data.stats || {};
   const weekData = data.weekly_trend || [];
-  const taskData = data.task_breakdown || [];
+  const breakdown = data.task_breakdown || {};
+  const taskData = Object.entries(breakdown).map(([name, value]) => ({ name, value: value || 0 }));
   const xpData = data.daily_xp || [];
   const habitData = data.habit_consistency || [];
 

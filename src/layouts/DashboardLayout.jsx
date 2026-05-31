@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { HiHome, HiClipboardDocumentList, HiCalendarDays, HiArrowPath, HiChartBar, HiClock, HiBookOpen, HiTrophy, HiStar, HiGift, HiCog6Tooth, HiArrowRightOnRectangle } from 'react-icons/hi2';
 import useAuthStore from '../store/authStore';
+import client from '../api/client';
 
 const navItems = [
   { to: '/dashboard', icon: HiHome, label: 'Dashboard' },
@@ -20,10 +22,16 @@ export default function DashboardLayout() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
+
+  // Refresh user profile on mount
+  useEffect(() => {
+    client.get('/auth/profile/').then(r => useAuthStore.getState().setUser(r.data)).catch(() => {});
+  }, []);
+
   const xp = user?.xp || 0;
   const level = user?.level || 1;
-  const xpForNext = level * 1000;
-  const streak = user?.streaks || 0;
+  const xpForNext = level * 100;
+  const streak = user?.streak_count || 0;
   const discipline = user?.discipline_score || 0;
 
   return (
