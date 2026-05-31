@@ -65,17 +65,17 @@ export default function FocusMode() {
             className="bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-8 py-3 font-medium text-lg">
             {running ? 'Pause' : 'Start Focus'}
           </button>
-          <button onClick={reset} className="border border-[#2a2a3e] text-gray-400 hover:text-white rounded-xl px-6 py-3">Reset</button>
+          <button onClick={reset} className="border border-gray-200 dark:border-[#2a2a3e] text-gray-400 hover:text-white rounded-xl px-6 py-3">Reset</button>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
-        <div className="rounded-2xl p-6 bg-[#1a1a2e] border border-[#2a2a3e] text-center">
+        <div className="rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e] text-center">
           <p className="text-gray-400 text-sm">Today's Focus</p>
           <p className="text-2xl font-bold text-white mt-1">{sessions.length} sessions</p>
         </div>
-        <div className="rounded-2xl p-6 bg-[#1a1a2e] border border-[#2a2a3e] text-center">
+        <div className="rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e] text-center">
           <p className="text-gray-400 text-sm">Total Focus</p>
           <p className="text-2xl font-bold text-white mt-1">{sessions.length * 25}m</p>
         </div>
@@ -83,11 +83,11 @@ export default function FocusMode() {
 
       {/* Session History */}
       {sessions.length > 0 && (
-        <div className="rounded-2xl p-6 bg-[#1a1a2e] border border-[#2a2a3e] max-w-md mx-auto">
+        <div className="rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e] max-w-md mx-auto">
           <h3 className="text-white font-semibold mb-3">Session History</h3>
           <div className="space-y-2">
             {sessions.map((s, i) => (
-              <div key={i} className="flex items-center justify-between text-sm p-2 rounded-lg bg-[#0f0f1a]">
+              <div key={i} className="flex items-center justify-between text-sm p-2 rounded-lg bg-gray-50 dark:bg-[#0f0f1a]">
                 <span className="text-gray-300 capitalize">{s.mode}</span>
                 <span className="text-gray-500">{s.completedAt}</span>
               </div>

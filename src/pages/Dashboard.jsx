@@ -54,7 +54,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="rounded-2xl p-6 bg-[#1a1a2e] border border-[#2a2a3e]">
+        <div className="rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e]">
           <p className="text-gray-400 text-sm mb-3">Tasks Overview</p>
           <div className="flex items-center gap-4">
             <div className="w-20 h-20">
@@ -71,7 +71,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-        <div className="rounded-2xl p-6 bg-[#1a1a2e] border border-[#2a2a3e] flex flex-col items-center justify-center">
+        <div className="rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e] flex flex-col items-center justify-center">
           <p className="text-gray-400 text-sm mb-2">Today's Progress</p>
           <div className="relative w-20 h-20">
             <svg className="w-full h-full -rotate-90">
@@ -81,24 +81,24 @@ export default function Dashboard() {
             <span className="absolute inset-0 flex items-center justify-center text-white font-bold text-sm">{progress}%</span>
           </div>
         </div>
-        <div className="rounded-2xl p-6 bg-[#1a1a2e] border border-[#2a2a3e]">
+        <div className="rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e]">
           <p className="text-gray-400 text-sm mb-2">XP Earned Today</p>
           <p className="text-2xl font-bold text-emerald-400">+{xpToday} XP</p>
           <div className="h-12 mt-2">
             <ResponsiveContainer><AreaChart data={sparkData}><Area type="monotone" dataKey="v" stroke="#6366f1" fill="#6366f1" fillOpacity={0.1} strokeWidth={2} /></AreaChart></ResponsiveContainer>
           </div>
         </div>
-        <div className="rounded-2xl p-6 bg-[#1a1a2e] border border-[#2a2a3e]">
+        <div className="rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e]">
           <p className="text-gray-400 text-sm mb-2">Discipline Score</p>
-          <p className="text-4xl font-bold text-white">{user?.discipline_score || analytics?.stats?.discipline_score || 0}<span className="text-lg text-gray-400">/100</span></p>
+          <p className="text-4xl font-bold text-gray-900 dark:text-white">{user?.discipline_score || analytics?.stats?.discipline_score || 0}<span className="text-lg text-gray-500 dark:text-gray-400">/100</span></p>
           <p className="text-emerald-400 text-sm mt-1">Level {user?.level || 1} • {user?.xp || 0} XP</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 rounded-2xl p-6 bg-[#1a1a2e] border border-[#2a2a3e]">
+        <div className="lg:col-span-2 rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e]">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-white">Today's Tasks</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Today's Tasks</h3>
             <button className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-4 py-2 text-sm"><HiPlus className="w-4 h-4" /> Add Task</button>
           </div>
           <div className="flex gap-2 mb-4">
@@ -111,7 +111,7 @@ export default function Dashboard() {
           <div className="space-y-2">
             {filtered.length === 0 && <p className="text-gray-500 text-sm">No tasks</p>}
             {filtered.map((task) => (
-              <div key={task.id} className="flex items-center gap-3 p-3 rounded-xl bg-[#0f0f1a] border border-[#2a2a3e]">
+              <div key={task.id} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#0f0f1a] border border-gray-200 dark:border-[#2a2a3e]">
                 <input type="checkbox" checked={task.status === 'completed'} onChange={() => completeTask(task.id)} className="w-5 h-5 rounded-full" />
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm ${task.status === 'completed' ? 'text-gray-500 line-through' : 'text-white'}`}>{task.title}</p>
@@ -124,7 +124,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="rounded-2xl p-6 bg-[#1a1a2e] border border-[#2a2a3e]">
+        <div className="rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e]">
           <h3 className="text-lg font-semibold text-white mb-4">{format(currentMonth, 'MMMM yyyy')}</h3>
           <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-2">
             {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => <span key={d}>{d}</span>)}
