@@ -153,8 +153,9 @@ export default function Tasks() {
             <span>Title</span><span>Priority</span><span>Time</span><span>Status</span><span>XP</span><span></span>
           </div>
           {tasks.map((task) => (
-            <div key={task.id} className="grid grid-cols-[1fr_100px_120px_100px_80px_60px] gap-4 px-6 py-4 items-center border-b border-[#2a2a3e] last:border-0">
+            <div key={task.id} className="grid grid-cols-[1fr_80px_100px_120px_100px_80px_60px] gap-4 px-6 py-4 items-center border-b border-[#2a2a3e] last:border-0">
               <span className="text-white text-sm truncate">{task.title}</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full w-fit ${task.task_type === 'daily' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-400'}`}>{task.task_type === 'daily' ? '📅 Daily' : '⏰ Timed'}</span>
               <span className={`text-xs px-2 py-0.5 rounded-full w-fit ${priorityClass[task.priority] || ''}`}>{task.priority}</span>
               <span className="text-xs text-gray-400">{task.start_time ? new Date(task.start_time).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true}) : '--'}</span>
               <span className={`text-xs px-2 py-0.5 rounded-full w-fit ${statusClass[task.status] || ''}`}>{task.status}</span>
