@@ -1,34 +1,42 @@
-import { useState } from 'react';
-import { LineChart, Line, PieChart, Pie, Cell, BarChart, Bar, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-
-const weekData = [
-  { day: 'Mon', this: 65, last: 45 }, { day: 'Tue', this: 72, last: 55 }, { day: 'Wed', this: 80, last: 60 },
-  { day: 'Thu', this: 68, last: 50 }, { day: 'Fri', this: 85, last: 70 }, { day: 'Sat', this: 55, last: 40 }, { day: 'Sun', this: 78, last: 65 },
-];
-const taskData = [{ name: 'Completed', value: 12 }, { name: 'In Progress', value: 7 }, { name: 'To Do', value: 3 }, { name: 'Missed', value: 2 }];
-const focusData = [{ name: 'Deep Work', value: 55 }, { name: 'Meetings', value: 25 }, { name: 'Breaks', value: 20 }];
-const xpData = [{ day: 'Mon', xp: 320 }, { day: 'Tue', xp: 450 }, { day: 'Wed', xp: 280 }, { day: 'Thu', xp: 520 }, { day: 'Fri', xp: 380 }, { day: 'Sat', xp: 200 }, { day: 'Sun', xp: 410 }];
-const habitData = [{ name: 'Meditation', done: 6, total: 7 }, { name: 'Workout', done: 5, total: 7 }, { name: 'Reading', done: 7, total: 7 }, { name: 'No Sugar', done: 4, total: 7 }];
+import { useState, useEffect } from 'react';
+import { LineChart, Line, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import client from '../api/client';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#f43f5e', '#a855f7'];
 
 export default function Analytics() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('this');
+
+  useEffect(() => {
+    client.get('/analytics/').then((r) => setData(r.data)).catch(() => {}).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (!data) return <div className="text-center text-gray-400 py-20">No analytics data available yet. Complete some tasks to see your stats!</div>;
+
+  const stats = data.stats || {};
+  const weekData = data.weekly_trend || [];
+  const taskData = data.task_breakdown || [];
+  const xpData = data.daily_xp || [];
+  const habitData = data.habit_consistency || [];
+
+  const statCards = [
+    { label: 'Tasks Completed', value: stats.tasks_completed ?? 0, change: stats.tasks_change, color: 'text-emerald-400' },
+    { label: 'Focus Time', value: stats.focus_time || '0h', change: stats.focus_change, color: 'text-indigo-400' },
+    { label: 'Productivity Score', value: stats.productivity_score ?? 0, change: stats.productivity_change, color: 'text-amber-400' },
+    { label: 'Discipline Score', value: stats.discipline_score ?? 0, change: stats.discipline_change, color: 'text-emerald-400' },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Top Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Tasks Completed', value: '38', change: '+12%', color: 'text-emerald-400' },
-          { label: 'Focus Time', value: '18h 32m', change: '+8%', color: 'text-indigo-400' },
-          { label: 'Productivity Score', value: '78', change: '+5%', color: 'text-amber-400' },
-          { label: 'Discipline Score', value: '82', change: '+3%', color: 'text-emerald-400' },
-        ].map((s) => (
+        {statCards.map((s) => (
           <div key={s.label} className="rounded-2xl p-6 bg-[#1a1a2e] border border-[#2a2a3e]">
             <p className="text-gray-400 text-sm">{s.label}</p>
             <p className="text-2xl font-bold text-white mt-1">{s.value}</p>
-            <p className={`text-sm mt-1 ${s.color}`}>{s.change} from last week</p>
+            {s.change != null && <p className={`text-sm mt-1 ${s.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>{s.change >= 0 ? '+' : ''}{s.change}% from last week</p>}
           </div>
         ))}
       </div>
@@ -52,26 +60,26 @@ export default function Analytics() {
               <XAxis dataKey="day" stroke="#6b7280" fontSize={12} />
               <YAxis stroke="#6b7280" fontSize={12} />
               <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid #2a2a3e', borderRadius: 12 }} />
-              <Line type="monotone" dataKey={period === 'this' ? 'this' : 'last'} stroke="#6366f1" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey={period === 'this' ? 'this_week' : 'last_week'} stroke="#6366f1" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Task Completion */}
+        {/* Task Breakdown */}
         <div className="rounded-2xl p-6 bg-[#1a1a2e] border border-[#2a2a3e]">
           <h3 className="text-white font-semibold mb-4">Task Completion</h3>
           <div className="flex items-center gap-6">
             <ResponsiveContainer width={150} height={150}>
               <PieChart>
                 <Pie data={taskData} innerRadius={40} outerRadius={60} dataKey="value" strokeWidth={0}>
-                  {taskData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
+                  {taskData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
             <div className="space-y-2">
               {taskData.map((d, i) => (
                 <div key={d.name} className="flex items-center gap-2 text-sm">
-                  <span className="w-3 h-3 rounded-full" style={{ background: COLORS[i] }} />
+                  <span className="w-3 h-3 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
                   <span className="text-gray-400">{d.name}</span>
                   <span className="text-white ml-auto">{d.value}</span>
                 </div>
@@ -80,31 +88,8 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Focus Time Distribution */}
-        <div className="rounded-2xl p-6 bg-[#1a1a2e] border border-[#2a2a3e]">
-          <h3 className="text-white font-semibold mb-4">Focus Time Distribution</h3>
-          <div className="flex items-center gap-6">
-            <ResponsiveContainer width={150} height={150}>
-              <PieChart>
-                <Pie data={focusData} innerRadius={0} outerRadius={60} dataKey="value" strokeWidth={0}>
-                  {focusData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="space-y-2">
-              {focusData.map((d, i) => (
-                <div key={d.name} className="flex items-center gap-2 text-sm">
-                  <span className="w-3 h-3 rounded-full" style={{ background: COLORS[i] }} />
-                  <span className="text-gray-400">{d.name}</span>
-                  <span className="text-white ml-auto">{d.value}%</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
         {/* Daily XP */}
-        <div className="rounded-2xl p-6 bg-[#1a1a2e] border border-[#2a2a3e]">
+        <div className="rounded-2xl p-6 bg-[#1a1a2e] border border-[#2a2a3e] lg:col-span-2">
           <h3 className="text-white font-semibold mb-4">Daily XP</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={xpData}>
@@ -118,20 +103,22 @@ export default function Analytics() {
       </div>
 
       {/* Habit Consistency */}
-      <div className="rounded-2xl p-6 bg-[#1a1a2e] border border-[#2a2a3e]">
-        <h3 className="text-white font-semibold mb-4">Habit Consistency</h3>
-        <div className="space-y-4">
-          {habitData.map((h) => (
-            <div key={h.name} className="flex items-center gap-4">
-              <span className="text-sm text-gray-300 w-24">{h.name}</span>
-              <div className="flex-1 h-3 bg-[#0f0f1a] rounded-full overflow-hidden">
-                <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${(h.done / h.total) * 100}%` }} />
+      {habitData.length > 0 && (
+        <div className="rounded-2xl p-6 bg-[#1a1a2e] border border-[#2a2a3e]">
+          <h3 className="text-white font-semibold mb-4">Habit Consistency</h3>
+          <div className="space-y-4">
+            {habitData.map((h) => (
+              <div key={h.name} className="flex items-center gap-4">
+                <span className="text-sm text-gray-300 w-24">{h.name}</span>
+                <div className="flex-1 h-3 bg-[#0f0f1a] rounded-full overflow-hidden">
+                  <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${(h.done / (h.total || 7)) * 100}%` }} />
+                </div>
+                <span className="text-sm text-gray-400">{h.done}/{h.total || 7}</span>
               </div>
-              <span className="text-sm text-gray-400">{h.done}/{h.total}</span>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
