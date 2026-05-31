@@ -1,9 +1,17 @@
-import { Routes, Route } from 'react-router-dom'
-import Landing from './pages/Landing/Landing'
-import Login from './pages/Auth/Login'
-import Register from './pages/Auth/Register'
-import Dashboard from './pages/Dashboard/Dashboard'
-import ProtectedRoute from './routes/ProtectedRoute'
+import { Routes, Route } from 'react-router-dom';
+import ProtectedRoute from './routes/ProtectedRoute';
+import Landing from './pages/Landing';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import Tasks from './pages/Tasks';
+import Calendar from './pages/Calendar';
+import Habits from './pages/Habits';
+import Analytics from './pages/Analytics';
+import FocusMode from './pages/FocusMode';
+import Achievements from './pages/Achievements';
+import Settings from './pages/Settings';
+import Profile from './pages/Profile';
 
 export default function App() {
   return (
@@ -11,7 +19,20 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/tasks" element={<Tasks />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/habits" element={<Habits />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/focus" element={<FocusMode />} />
+        <Route path="/journal" element={<div className="text-white">Journal - Coming Soon</div>} />
+        <Route path="/challenges" element={<div className="text-white">Challenges - Coming Soon</div>} />
+        <Route path="/achievements" element={<Achievements />} />
+        <Route path="/rewards" element={<div className="text-white">Rewards Store - Coming Soon</div>} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/profile" element={<Profile />} />
+      </Route>
     </Routes>
-  )
+  );
 }

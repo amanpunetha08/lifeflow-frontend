@@ -1,37 +1,41 @@
-import axios from 'axios'
-import { useAuthStore } from '../store/authStore'
+import axios from 'axios';
 
-const api = axios.create({
+const client = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
   headers: { 'Content-Type': 'application/json' },
-})
+});
 
-api.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().accessToken
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
-})
+client.interceptors.request.use((config) => {
+  const tokens = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.tokens;
+  if (tokens?.access) {
+    config.headers.Authorization = `Bearer ${tokens.access}`;
+  }
+  return config;
+});
 
-api.interceptors.response.use(
-  (response) => response,
+client.interceptors.response.use(
+  (res) => res,
   async (error) => {
-    const originalRequest = error.config
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true
-      const refresh = useAuthStore.getState().refreshToken
+    const original = error.config;
+    if (error.response?.status === 401 && !original._retry) {
+      original._retry = true;
+      const stored = JSON.parse(localStorage.getItem('auth-storage') || '{}');
+      const refresh = stored?.state?.tokens?.refresh;
       if (refresh) {
         try {
-          const { data } = await axios.post('/api/auth/token/refresh/', { refresh })
-          useAuthStore.getState().setTokens(data.access, refresh)
-          originalRequest.headers.Authorization = `Bearer ${data.access}`
-          return api(originalRequest)
+          const { data } = await axios.post('/api/auth/token/refresh/', { refresh });
+          stored.state.tokens.access = data.access;
+          localStorage.setItem('auth-storage', JSON.stringify(stored));
+          original.headers.Authorization = `Bearer ${data.access}`;
+          return client(original);
         } catch {
-          useAuthStore.getState().logout()
+          localStorage.removeItem('auth-storage');
+          window.location.href = '/login';
         }
       }
     }
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
-)
+);
 
-export default api
+export default client;
