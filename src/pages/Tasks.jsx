@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HiPlus, HiFunnel } from 'react-icons/hi2';
+import { HiPlus, HiFunnel, HiArrowPath } from 'react-icons/hi2';
 import client from '../api/client';
 import toast from 'react-hot-toast';
 
@@ -35,6 +35,15 @@ export default function Tasks() {
     } catch { toast.error('Failed'); }
   };
 
+  const resetToday = async () => {
+    if (!confirm('This will mark all pending tasks as missed, apply demerits, and create fresh tasks. Continue?')) return;
+    try {
+      const { data } = await client.post('/tasks/reset_today/');
+      toast.success(`Reset done! ${data.created.length} tasks created.`);
+      client.get('/tasks/today/').then((r) => setTasks(r.data?.results || r.data || []));
+    } catch { toast.error('Reset failed'); }
+  };
+
   const columns = ['todo', 'in_progress', 'completed'];
 
   return (
@@ -49,6 +58,9 @@ export default function Tasks() {
           ))}
         </div>
         <div className="flex gap-2">
+          <button onClick={resetToday} className="flex items-center gap-1 border border-rose-500/30 text-rose-400 rounded-xl px-4 py-2 text-sm hover:bg-rose-500/10">
+            <HiArrowPath className="w-4 h-4" /> Reset Day
+          </button>
           <button className="flex items-center gap-1 border border-[#2a2a3e] text-gray-400 rounded-xl px-4 py-2 text-sm hover:text-white">
             <HiFunnel className="w-4 h-4" /> Filter
           </button>
