@@ -17,7 +17,8 @@ function createApiStore(endpoint, dependents = []) {
       set({ loading: true });
       try {
         const { data } = await client.get(endpoint);
-        set({ data: data.results || data, loading: false, stale: false });
+        const result = data.results !== undefined ? data.results : data;
+        set({ data: result, loading: false, stale: false });
       } catch {
         set({ loading: false });
       }
