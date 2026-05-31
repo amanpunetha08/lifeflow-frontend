@@ -4,6 +4,75 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import client from '../api/client';
 import toast from 'react-hot-toast';
 
+function StreakHeatmap({ data }) {
+  // Build 90-day grid (13 weeks × 7 days)
+  const today = new Date();
+  const days = [];
+  for (let i = 89; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+    const record = data.find(r => r.date === dateStr);
+    const level = record ? Math.min(4, Math.ceil((record.completed / Math.max(record.total, 1)) * 4)) : 0;
+    days.push({ date: dateStr, level, completed: record?.completed || 0, total: record?.total || 0 });
+  }
+
+  // Pad start to align with weekday (start on Sunday)
+  const firstDay = new Date(today);
+  firstDay.setDate(firstDay.getDate() - 89);
+  const padStart = firstDay.getDay();
+
+  const colors = ['bg-slate-100 dark:bg-slate-700', 'bg-emerald-200 dark:bg-emerald-900', 'bg-emerald-300 dark:bg-emerald-700', 'bg-emerald-400 dark:bg-emerald-500', 'bg-emerald-500 dark:bg-emerald-400'];
+  const months = [];
+  let lastMonth = -1;
+  days.forEach((d, i) => {
+    const m = new Date(d.date).getMonth();
+    if (m !== lastMonth) { months.push({ idx: i + padStart, name: new Date(d.date).toLocaleString('default', { month: 'short' }) }); lastMonth = m; }
+  });
+
+  const cells = [...Array(padStart).fill(null), ...days];
+  const weeks = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+
+  return (
+    <div>
+      <div className="flex gap-0.5 mb-1 ml-8">
+        {months.map((m, i) => (
+          <span key={i} className="text-[10px] text-slate-400" style={{ marginLeft: `${Math.max(0, (m.idx / 7) * 14 - (i > 0 ? (months[i-1].idx / 7) * 14 + 20 : 0))}px` }}>{m.name}</span>
+        ))}
+      </div>
+      <div className="flex gap-0.5">
+        <div className="flex flex-col gap-0.5 mr-1">
+          {['', 'Mon', '', 'Wed', '', 'Fri', ''].map((d, i) => (
+            <span key={i} className="text-[10px] text-slate-400 h-3 leading-3">{d}</span>
+          ))}
+        </div>
+        <div className="flex gap-0.5">
+          {weeks.map((week, wi) => (
+            <div key={wi} className="flex flex-col gap-0.5">
+              {week.map((day, di) => (
+                <div
+                  key={di}
+                  className={`w-3 h-3 rounded-sm ${day ? colors[day.level] : 'bg-transparent'}`}
+                  title={day ? `${day.date}: ${day.completed}/${day.total} tasks` : ''}
+                />
+              ))}
+              {week.length < 7 && [...Array(7 - week.length)].map((_, i) => (
+                <div key={`pad-${i}`} className="w-3 h-3 rounded-sm bg-transparent" />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="flex items-center gap-1 mt-3 ml-8">
+        <span className="text-[10px] text-slate-400">Less</span>
+        {colors.map((c, i) => <div key={i} className={`w-3 h-3 rounded-sm ${c}`} />)}
+        <span className="text-[10px] text-slate-400">More</span>
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const [tasks, setTasks] = useState([]);
   const [analytics, setAnalytics] = useState(null);
@@ -80,6 +149,15 @@ export default function Dashboard() {
             </LineChart>
           </ResponsiveContainer>
         </div>
+      </div>
+
+      {/* Streak Heatmap */}
+      <div className="bg-white dark:bg-[#1E293B] rounded-2xl shadow-sm dark:shadow-none border border-slate-100 dark:border-[#475569] p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50">Activity Streak</h3>
+          <span className="text-xs text-slate-400">Last 90 days</span>
+        </div>
+        <StreakHeatmap data={analytics?.streak_history || []} />
       </div>
     </div>
   );
