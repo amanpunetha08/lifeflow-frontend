@@ -29,7 +29,7 @@ export default function Calendar() {
           ))}
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={() => setCurrent(new Date())} className="text-sm text-gray-400 hover:text-white px-3 py-1.5 border border-gray-200 dark:border-[#2a2a3e] rounded-lg">Today</button>
+          <button onClick={() => setCurrent(new Date())} className="text-sm text-gray-400 hover:text-white px-3 py-1.5 border border-slate-200 dark:border-[#2a2a3e] rounded-lg">Today</button>
           <button onClick={() => setCurrent(subMonths(current, 1))} className="text-gray-400 hover:text-white p-1"><HiChevronLeft className="w-5 h-5" /></button>
           <span className="text-white font-medium">{format(current, 'MMMM yyyy')}</span>
           <button onClick={() => setCurrent(addMonths(current, 1))} className="text-gray-400 hover:text-white p-1"><HiChevronRight className="w-5 h-5" /></button>
@@ -41,7 +41,7 @@ export default function Calendar() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Calendar Grid */}
-        <div className="lg:col-span-3 rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e]">
+        <div className="lg:col-span-3 rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
           <div className="grid grid-cols-7 gap-1 text-center text-sm text-gray-500 mb-3">
             {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((d) => (
               <span key={d}>{d.slice(0, 3)}</span>
@@ -53,7 +53,7 @@ export default function Calendar() {
               <div key={day.toISOString()} onClick={() => setSelected(day)}
                 className={`h-24 p-2 rounded-xl border cursor-pointer transition-colors ${
                   isSameDay(day, selected) ? 'border-indigo-500 bg-indigo-500/5' :
-                  isToday(day) ? 'border-indigo-500/50 bg-indigo-500/5' : 'border-gray-200 dark:border-[#2a2a3e] hover:border-[#3a3a4e]'
+                  isToday(day) ? 'border-indigo-500/50 bg-indigo-500/5' : 'border-slate-200 dark:border-[#2a2a3e] hover:border-[#3a3a4e]'
                 }`}>
                 <span className={`text-xs ${isToday(day) ? 'text-indigo-400 font-bold' : 'text-gray-400'}`}>{format(day, 'd')}</span>
                 <div className="mt-1 space-y-0.5">
@@ -67,12 +67,12 @@ export default function Calendar() {
         </div>
 
         {/* Right Panel */}
-        <div className="rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e]">
+        <div className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
           <h3 className="text-white font-semibold mb-4">Events on {format(selected, 'MMM d')}</h3>
           <div className="space-y-3">
             {selectedEvents.length === 0 && <p className="text-gray-500 text-sm">No events</p>}
             {selectedEvents.map((e) => (
-              <div key={e.id} className="p-3 rounded-xl bg-gray-50 dark:bg-[#0f0f1a] border border-gray-200 dark:border-[#2a2a3e]">
+              <div key={e.id} className="p-3 rounded-xl bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e]">
                 <div className="flex items-center gap-2">
                   <div className={`w-2 h-2 rounded-full ${e.color}`} />
                   <span className="text-sm text-gray-900 dark:text-white">{e.title}</span>

@@ -34,7 +34,7 @@ export default function Analytics() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {statCards.map((s) => (
-          <div key={s.label} className="rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e]">
+          <div key={s.label} className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
             <p className="text-gray-400 text-sm">{s.label}</p>
             <p className="text-2xl font-bold text-white mt-1">{s.value}</p>
             {s.change != null && <p className={`text-sm mt-1 ${s.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>{s.change >= 0 ? '+' : ''}{s.change}% from last week</p>}
@@ -44,7 +44,7 @@ export default function Analytics() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Productivity Trend */}
-        <div className="rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e]">
+        <div className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-white font-semibold">Productivity Trend</h3>
             <div className="flex gap-2">
@@ -67,7 +67,7 @@ export default function Analytics() {
         </div>
 
         {/* Task Breakdown */}
-        <div className="rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e]">
+        <div className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
           <h3 className="text-white font-semibold mb-4">Task Completion</h3>
           <div className="flex items-center gap-6">
             <ResponsiveContainer width={150} height={150}>
@@ -90,7 +90,7 @@ export default function Analytics() {
         </div>
 
         {/* Daily XP */}
-        <div className="rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e] lg:col-span-2">
+        <div className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e] lg:col-span-2">
           <h3 className="text-white font-semibold mb-4">Daily XP</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={xpData}>
@@ -105,13 +105,13 @@ export default function Analytics() {
 
       {/* Habit Consistency */}
       {habitData.length > 0 && (
-        <div className="rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e]">
+        <div className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
           <h3 className="text-white font-semibold mb-4">Habit Consistency</h3>
           <div className="space-y-4">
             {habitData.map((h) => (
               <div key={h.name} className="flex items-center gap-4">
                 <span className="text-sm text-gray-300 w-24">{h.name}</span>
-                <div className="flex-1 h-3 bg-gray-50 dark:bg-[#0f0f1a] rounded-full overflow-hidden">
+                <div className="flex-1 h-3 bg-slate-100 dark:bg-[#0f0f1a] rounded-full overflow-hidden">
                   <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${(h.done / (h.total || 7)) * 100}%` }} />
                 </div>
                 <span className="text-sm text-gray-500 dark:text-gray-400">{h.done}/{h.total || 7}</span>

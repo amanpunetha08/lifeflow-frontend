@@ -38,7 +38,7 @@ export default function Achievements() {
           const pct = Math.min((progress / requirement) * 100, 100);
 
           return (
-            <div key={a.id} className={`rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e] relative ${!unlocked ? 'opacity-60' : ''}`}>
+            <div key={a.id} className={`rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e] relative ${!unlocked ? 'opacity-60' : ''}`}>
               {!unlocked && <div className="absolute top-3 right-3 text-xs bg-gray-500/20 text-gray-400 px-2 py-0.5 rounded-full">🔒 Locked</div>}
               {unlocked && <div className="absolute top-3 right-3 text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full">✓ {new Date(a.unlocked_at).toLocaleDateString()}</div>}
               <div className="text-4xl mb-4">{a.icon || a.emoji || '🏆'}</div>
@@ -48,7 +48,7 @@ export default function Achievements() {
                 <span className="text-gray-500">Progress</span>
                 <span className={unlocked ? 'text-emerald-400' : 'text-gray-400'}>{progress}/{requirement}</span>
               </div>
-              <div className="mt-2 h-2 bg-gray-50 dark:bg-[#0f0f1a] rounded-full overflow-hidden">
+              <div className="mt-2 h-2 bg-slate-100 dark:bg-[#0f0f1a] rounded-full overflow-hidden">
                 <div className={`h-full rounded-full ${unlocked ? 'bg-emerald-500' : 'bg-indigo-500'}`} style={{ width: `${pct}%` }} />
               </div>
             </div>

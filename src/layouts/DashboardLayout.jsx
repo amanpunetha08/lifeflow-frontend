@@ -38,14 +38,14 @@ export default function DashboardLayout() {
   const discipline = user?.discipline_score || 0;
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-[#0f0f1a]">
+    <div className="flex h-screen bg-slate-100 dark:bg-[#0f0f1a]">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-[#0a0a12] border-r border-gray-200 dark:border-[#1a1a2e] flex flex-col transform transition-transform lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-slate-50 dark:bg-[#0a0a12] border-r border-slate-200 dark:border-[#1a1a2e] flex flex-col transform transition-transform lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             <span className="text-indigo-500">Life</span>Flow
@@ -71,7 +71,7 @@ export default function DashboardLayout() {
             </NavLink>
           ))}
         </nav>
-        <div className="p-4 border-t border-gray-200 dark:border-[#1a1a2e]">
+        <div className="p-4 border-t border-slate-200 dark:border-[#1a1a2e]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold">
               {user?.username?.[0]?.toUpperCase() || 'U'}
@@ -105,7 +105,7 @@ export default function DashboardLayout() {
 
       {/* Main */}
       <main className="flex-1 overflow-y-auto min-w-0">
-        <header className="sticky top-0 z-10 bg-white/80 dark:bg-[#0f0f1a]/80 backdrop-blur-sm border-b border-gray-200 dark:border-[#1a1a2e] px-4 md:px-8 py-4 flex items-center justify-between">
+        <header className="sticky top-0 z-10 bg-slate-50/80 dark:bg-[#0f0f1a]/80 backdrop-blur-sm border-b border-slate-200 dark:border-[#1a1a2e] px-4 md:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button className="lg:hidden text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white" onClick={() => setSidebarOpen(true)}>
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>

@@ -70,7 +70,7 @@ export default function Tasks() {
           <button onClick={resetToday} className="flex items-center gap-1 border border-rose-500/30 text-rose-400 rounded-xl px-4 py-2 text-sm hover:bg-rose-500/10">
             <HiArrowPath className="w-4 h-4" /> Reset Day
           </button>
-          <button className="flex items-center gap-1 border border-gray-200 dark:border-[#2a2a3e] text-gray-400 rounded-xl px-4 py-2 text-sm hover:text-gray-900 dark:text-white">
+          <button className="flex items-center gap-1 border border-slate-200 dark:border-[#2a2a3e] text-gray-400 rounded-xl px-4 py-2 text-sm hover:text-gray-900 dark:text-white">
             <HiFunnel className="w-4 h-4" /> Filter
           </button>
           <button onClick={() => setShowAdd(true)} className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-4 py-2 text-sm">
@@ -81,14 +81,14 @@ export default function Tasks() {
 
       {/* Add Task Modal */}
       {showAdd && (
-        <div className="rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e] space-y-4">
+        <div className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e] space-y-4">
           <h3 className="text-white font-semibold">Create New Task</h3>
           <form onSubmit={addTask} className="space-y-4">
             {/* Step 1: Title */}
             <div>
               <label className="text-sm text-gray-400 block mb-1">Task Name</label>
               <input value={newTask.title} onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                className="w-full bg-gray-50 dark:bg-[#0f0f1a] border border-gray-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-gray-900 dark:text-white" placeholder="What needs to be done?" required />
+                className="w-full bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-gray-900 dark:text-white" placeholder="What needs to be done?" required />
             </div>
 
             {/* Step 2: Type */}
@@ -96,13 +96,13 @@ export default function Tasks() {
               <label className="text-sm text-gray-400 block mb-2">Task Type</label>
               <div className="grid grid-cols-2 gap-3">
                 <button type="button" onClick={() => setNewTask({ ...newTask, task_type: 'daily', priority: 'high' })}
-                  className={`p-4 rounded-xl border text-left ${newTask.task_type === 'daily' ? 'border-indigo-500 bg-indigo-500/10' : 'border-gray-200 dark:border-[#2a2a3e] bg-gray-50 dark:bg-[#0f0f1a]'}`}>
+                  className={`p-4 rounded-xl border text-left ${newTask.task_type === 'daily' ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-200 dark:border-[#2a2a3e] bg-slate-100 dark:bg-[#0f0f1a]'}`}>
                   <div className="text-lg mb-1">📅</div>
                   <div className="text-sm font-medium text-gray-900 dark:text-white">Daily Routine</div>
                   <div className="text-xs text-gray-500 mt-1">Repeats every day • High priority • +10 XP</div>
                 </button>
                 <button type="button" onClick={() => setNewTask({ ...newTask, task_type: 'timeframe', priority: 'medium' })}
-                  className={`p-4 rounded-xl border text-left ${newTask.task_type === 'timeframe' ? 'border-amber-500 bg-amber-500/10' : 'border-gray-200 dark:border-[#2a2a3e] bg-gray-50 dark:bg-[#0f0f1a]'}`}>
+                  className={`p-4 rounded-xl border text-left ${newTask.task_type === 'timeframe' ? 'border-amber-500 bg-amber-500/10' : 'border-slate-200 dark:border-[#2a2a3e] bg-slate-100 dark:bg-[#0f0f1a]'}`}>
                   <div className="text-lg mb-1">⏰</div>
                   <div className="text-sm font-medium text-gray-900 dark:text-white">Time-Based</div>
                   <div className="text-xs text-gray-500 mt-1">One-time or multi-day • Custom priority</div>
@@ -121,7 +121,7 @@ export default function Tasks() {
                     { val: 'high', label: 'High', xp: '+10 XP', penalty: '-20 XP', color: 'rose' },
                   ].map((p) => (
                     <button key={p.val} type="button" onClick={() => setNewTask({ ...newTask, priority: p.val })}
-                      className={`p-3 rounded-xl border text-center ${newTask.priority === p.val ? `border-${p.color}-500 bg-${p.color}-500/10` : 'border-gray-200 dark:border-[#2a2a3e] bg-gray-50 dark:bg-[#0f0f1a]'}`}>
+                      className={`p-3 rounded-xl border text-center ${newTask.priority === p.val ? `border-${p.color}-500 bg-${p.color}-500/10` : 'border-slate-200 dark:border-[#2a2a3e] bg-slate-100 dark:bg-[#0f0f1a]'}`}>
                       <div className={`text-sm font-medium ${newTask.priority === p.val ? `text-${p.color}-400` : 'text-white'}`}>{p.label}</div>
                       <div className="text-xs text-gray-500">{p.xp}</div>
                       <div className="text-xs text-rose-400/70">Miss: {p.penalty}</div>
@@ -143,17 +143,17 @@ export default function Tasks() {
               <div>
                 <label className="text-sm text-gray-400 block mb-1">Start Time</label>
                 <input type="time" value={newTask.start_time_input || ''} onChange={(e) => setNewTask({ ...newTask, start_time_input: e.target.value })}
-                  className="w-full bg-gray-50 dark:bg-[#0f0f1a] border border-gray-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-gray-900 dark:text-white" />
+                  className="w-full bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-gray-900 dark:text-white" />
               </div>
               <div>
                 <label className="text-sm text-gray-400 block mb-1">End Time</label>
                 <input type="time" value={newTask.end_time_input || ''} onChange={(e) => setNewTask({ ...newTask, end_time_input: e.target.value })}
-                  className="w-full bg-gray-50 dark:bg-[#0f0f1a] border border-gray-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-gray-900 dark:text-white" />
+                  className="w-full bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-gray-900 dark:text-white" />
               </div>
               <div>
                 <label className="text-sm text-gray-400 block mb-1">Duration (days, optional)</label>
                 <input type="number" min="1" value={newTask.timeframe_days || ''} onChange={(e) => setNewTask({ ...newTask, timeframe_days: parseInt(e.target.value) || null })}
-                  className="w-full bg-gray-50 dark:bg-[#0f0f1a] border border-gray-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-gray-900 dark:text-white" placeholder="Leave empty for single task" />
+                  className="w-full bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-gray-900 dark:text-white" placeholder="Leave empty for single task" />
               </div>
             </>)}
 
@@ -167,12 +167,12 @@ export default function Tasks() {
 
       {/* List View */}
       {view === 'list' && (
-        <div className="rounded-2xl bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e] overflow-hidden">
-          <div className="grid grid-cols-[1fr_100px_120px_100px_80px_60px] gap-4 px-6 py-3 text-xs text-gray-500 border-b border-gray-200 dark:border-[#2a2a3e]">
+        <div className="rounded-2xl bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e] overflow-hidden">
+          <div className="grid grid-cols-[1fr_100px_120px_100px_80px_60px] gap-4 px-6 py-3 text-xs text-gray-500 border-b border-slate-200 dark:border-[#2a2a3e]">
             <span>Title</span><span>Priority</span><span>Time</span><span>Status</span><span>XP</span><span></span>
           </div>
           {tasks.map((task) => (
-            <div key={task.id} className="grid grid-cols-[1fr_80px_100px_120px_100px_80px_60px] gap-4 px-6 py-4 items-center border-b border-gray-200 dark:border-[#2a2a3e] last:border-0">
+            <div key={task.id} className="grid grid-cols-[1fr_80px_100px_120px_100px_80px_60px] gap-4 px-6 py-4 items-center border-b border-slate-200 dark:border-[#2a2a3e] last:border-0">
               <span className="text-white text-sm truncate">{task.title}</span>
               <span className={`text-xs px-2 py-0.5 rounded-full w-fit ${task.task_type === 'daily' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-400'}`}>{task.task_type === 'daily' ? '📅 Daily' : '⏰ Timed'}</span>
               <span className={`text-xs px-2 py-0.5 rounded-full w-fit ${priorityClass[task.priority] || ''}`}>{task.priority}</span>
@@ -189,11 +189,11 @@ export default function Tasks() {
       {view === 'board' && (
         <div className="grid grid-cols-3 gap-4">
           {columns.map((col) => (
-            <div key={col} className="rounded-2xl p-4 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e]">
+            <div key={col} className="rounded-2xl p-4 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
               <h4 className="text-sm font-medium text-gray-300 mb-3 capitalize">{col.replace('_', ' ')}</h4>
               <div className="space-y-2">
                 {tasks.filter((t) => t.status === col).map((task) => (
-                  <div key={task.id} className="p-3 rounded-xl bg-gray-50 dark:bg-[#0f0f1a] border border-gray-200 dark:border-[#2a2a3e]">
+                  <div key={task.id} className="p-3 rounded-xl bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e]">
                     <p className="text-sm text-white mb-2">{task.title}</p>
                     <div className="flex items-center justify-between">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${priorityClass[task.priority] || ''}`}>{task.priority}</span>
@@ -211,7 +211,7 @@ export default function Tasks() {
       {view === 'card' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {tasks.map((task) => (
-            <div key={task.id} className="rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e]">
+            <div key={task.id} className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
               <div className="flex items-start justify-between mb-3">
                 <h4 className="text-white font-medium">{task.title}</h4>
                 <span className={`text-xs px-2 py-0.5 rounded-full ${priorityClass[task.priority] || ''}`}>{task.priority}</span>

@@ -40,7 +40,7 @@ export default function Habits() {
 
           return (
             <div key={habit.id} onClick={() => setSelected(habit.id === selected ? null : habit.id)}
-              className="rounded-2xl p-6 bg-white dark:bg-[#1a1a2e] border border-gray-200 dark:border-[#2a2a3e] cursor-pointer hover:border-indigo-500/50 transition-colors">
+              className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e] cursor-pointer hover:border-indigo-500/50 transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <span className="text-2xl">{habit.icon || '📌'}</span>
@@ -54,7 +54,7 @@ export default function Habits() {
                     {dayLabels.map((day, i) => (
                       <div key={day} className="flex flex-col items-center gap-1">
                         <span className="text-[10px] text-gray-500">{day}</span>
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${days[i] ? 'bg-indigo-500 text-white' : 'bg-gray-50 dark:bg-[#0f0f1a] border border-gray-200 dark:border-[#2a2a3e] text-gray-500'}`}>
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${days[i] ? 'bg-indigo-500 text-white' : 'bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] text-gray-500'}`}>
                           {days[i] ? '✓' : ''}
                         </div>
                       </div>
@@ -67,7 +67,7 @@ export default function Habits() {
                 </div>
               </div>
               {selected === habit.id && (
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-[#2a2a3e]">
+                <div className="mt-4 pt-4 border-t border-slate-200 dark:border-[#2a2a3e]">
                   <p className="text-sm text-gray-400 mb-2">Current streak: <span className="text-amber-400">{streak} days</span></p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Completion rate: <span className="text-emerald-400">{completionRate}%</span></p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Total completed: <span className="text-indigo-400">{habit.total_completed || 0}</span></p>
