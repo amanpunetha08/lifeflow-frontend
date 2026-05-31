@@ -1,60 +1,48 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { HiOutlineTrophy } from 'react-icons/hi2';
 import client from '../api/client';
+import toast from 'react-hot-toast';
 
 export default function Achievements() {
   const [achievements, setAchievements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('all');
 
-  useEffect(() => {
-    client.get('/gamification/achievements/').then((r) => setAchievements(r.data?.results || r.data || [])).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  useEffect(() => { client.get('/gamification/achievements/').then(r => setAchievements(r.data.results || r.data || [])).catch(() => toast.error('Failed to load')).finally(() => setLoading(false)); }, []);
 
-  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
 
-  const filtered = tab === 'all' ? achievements : tab === 'unlocked' ? achievements.filter((a) => a.unlocked_at) : achievements.filter((a) => !a.unlocked_at);
+  const filtered = tab === 'all' ? achievements : tab === 'unlocked' ? achievements.filter(a => a.unlocked) : achievements.filter(a => !a.unlocked);
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Achievements</h2>
-        <div className="flex gap-2">
-          {['all', 'unlocked', 'locked'].map((t) => (
-            <button key={t} onClick={() => setTab(t)}
-              className={`px-4 py-2 rounded-xl text-sm ${tab === t ? 'bg-indigo-500/20 text-indigo-400' : 'text-gray-400 hover:text-white'}`}>
-              {t.charAt(0).toUpperCase() + t.slice(1)}
-            </button>
+      <div className="flex gap-1 bg-white dark:bg-[#1E293B] rounded-xl p-1 border border-slate-200 dark:border-[#475569] w-fit">
+        {['all', 'unlocked', 'locked'].map(t => <button key={t} onClick={() => setTab(t)} className={`px-3 py-1.5 text-sm rounded-lg capitalize transition-colors ${tab === t ? 'bg-emerald-600 text-white' : 'text-slate-600 dark:text-slate-400'}`}>{t}</button>)}
+      </div>
+
+      {filtered.length === 0 ? <p className="text-center text-slate-400 py-12 text-sm">No achievements to show</p> : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map(a => (
+            <div key={a.id} className={`p-5 rounded-2xl border shadow-sm dark:shadow-none ${a.unlocked ? 'bg-white dark:bg-[#1E293B] border-emerald-200 dark:border-emerald-500/30' : 'bg-white dark:bg-[#1E293B] border-slate-100 dark:border-[#475569] opacity-60'}`}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${a.unlocked ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600' : 'bg-slate-100 dark:bg-slate-700 text-slate-400'}`}>
+                  <HiOutlineTrophy className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-50">{a.name}</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{a.description}</p>
+                </div>
+              </div>
+              {a.progress !== undefined && (
+                <div>
+                  <div className="flex justify-between text-xs mb-1"><span className="text-slate-400">Progress</span><span className="text-slate-400">{a.progress}%</span></div>
+                  <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full"><div className={`h-full rounded-full ${a.unlocked ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`} style={{ width: `${a.progress}%` }} /></div>
+                </div>
+              )}
+            </div>
           ))}
         </div>
-      </div>
-
-      {!achievements.length && <div className="text-center text-gray-400 py-20">No achievements available yet.</div>}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map((a) => {
-          const unlocked = !!a.unlocked_at;
-          const progress = a.progress || 0;
-          const requirement = a.requirement_value || 1;
-          const pct = Math.min((progress / requirement) * 100, 100);
-
-          return (
-            <div key={a.id} className={`rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e] relative ${!unlocked ? 'opacity-60' : ''}`}>
-              {!unlocked && <div className="absolute top-3 right-3 text-xs bg-gray-500/20 text-gray-400 px-2 py-0.5 rounded-full">🔒 Locked</div>}
-              {unlocked && <div className="absolute top-3 right-3 text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full">✓ {new Date(a.unlocked_at).toLocaleDateString()}</div>}
-              <div className="text-4xl mb-4">{a.icon || a.emoji || '🏆'}</div>
-              <h4 className="text-white font-semibold mb-1">{a.name || a.title}</h4>
-              <p className="text-sm text-gray-400 mb-4">{a.description || a.desc}</p>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Progress</span>
-                <span className={unlocked ? 'text-emerald-400' : 'text-gray-400'}>{progress}/{requirement}</span>
-              </div>
-              <div className="mt-2 h-2 bg-slate-100 dark:bg-[#0f0f1a] rounded-full overflow-hidden">
-                <div className={`h-full rounded-full ${unlocked ? 'bg-emerald-500' : 'bg-indigo-500'}`} style={{ width: `${pct}%` }} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      )}
     </div>
   );
 }

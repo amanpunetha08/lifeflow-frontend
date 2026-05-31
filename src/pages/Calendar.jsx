@@ -1,86 +1,62 @@
-import { useState } from 'react';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isToday, isSameDay } from 'date-fns';
-import { HiChevronLeft, HiChevronRight, HiPlus } from 'react-icons/hi2';
-
-const sampleEvents = [
-  { id: 1, title: 'Team Standup', date: new Date(), color: 'bg-indigo-500' },
-  { id: 2, title: 'Deep Work Session', date: new Date(), color: 'bg-emerald-500' },
-  { id: 3, title: 'Review PRs', date: new Date(), color: 'bg-amber-500' },
-];
+import { useEffect, useState } from 'react';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, subMonths, isSameMonth, isSameDay, isToday } from 'date-fns';
+import { HiOutlineChevronLeft, HiOutlineChevronRight } from 'react-icons/hi2';
+import client from '../api/client';
 
 export default function Calendar() {
   const [current, setCurrent] = useState(new Date());
-  const [selected, setSelected] = useState(new Date());
-  const [view, setView] = useState('month');
+  const [tasks, setTasks] = useState([]);
+  const [selected, setSelected] = useState(null);
 
-  const monthDays = eachDayOfInterval({ start: startOfMonth(current), end: endOfMonth(current) });
-  const startDay = startOfMonth(current).getDay();
-  const selectedEvents = sampleEvents.filter((e) => isSameDay(e.date, selected));
+  useEffect(() => { client.get('/tasks/today/').then(r => setTasks(r.data.results || r.data || [])).catch(() => {}); }, []);
+
+  const monthStart = startOfMonth(current);
+  const monthEnd = endOfMonth(current);
+  const start = startOfWeek(monthStart);
+  const end = endOfWeek(monthEnd);
+
+  const days = [];
+  let day = start;
+  while (day <= end) { days.push(day); day = addDays(day, 1); }
+
+  const tasksForDate = (d) => tasks.filter(t => t.date && isSameDay(new Date(t.date), d));
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2">
-          {['month', 'week', 'day', 'agenda'].map((v) => (
-            <button key={v} onClick={() => setView(v)}
-              className={`px-4 py-2 rounded-xl text-sm ${view === v ? 'bg-indigo-500/20 text-indigo-400' : 'text-gray-400 hover:text-white'}`}>
-              {v.charAt(0).toUpperCase() + v.slice(1)}
-            </button>
-          ))}
+    <div className="grid lg:grid-cols-4 gap-6">
+      <div className="lg:col-span-3 bg-white dark:bg-[#1E293B] rounded-2xl shadow-sm dark:shadow-none border border-slate-100 dark:border-[#475569] p-5">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50">{format(current, 'MMMM yyyy')}</h3>
+          <div className="flex gap-1">
+            <button onClick={() => setCurrent(subMonths(current, 1))} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-[#334155] transition-colors"><HiOutlineChevronLeft className="w-4 h-4 text-slate-600 dark:text-slate-400" /></button>
+            <button onClick={() => setCurrent(addMonths(current, 1))} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-[#334155] transition-colors"><HiOutlineChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-400" /></button>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button onClick={() => setCurrent(new Date())} className="text-sm text-gray-400 hover:text-white px-3 py-1.5 border border-slate-200 dark:border-[#2a2a3e] rounded-lg">Today</button>
-          <button onClick={() => setCurrent(subMonths(current, 1))} className="text-gray-400 hover:text-white p-1"><HiChevronLeft className="w-5 h-5" /></button>
-          <span className="text-white font-medium">{format(current, 'MMMM yyyy')}</span>
-          <button onClick={() => setCurrent(addMonths(current, 1))} className="text-gray-400 hover:text-white p-1"><HiChevronRight className="w-5 h-5" /></button>
-          <button className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-gray-900 dark:text-white rounded-xl px-4 py-2 text-sm">
-            <HiPlus className="w-4 h-4" /> Add Event
-          </button>
+        <div className="grid grid-cols-7 gap-1 mb-2">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <div key={d} className="text-center text-xs font-medium text-slate-400 py-2">{d}</div>)}
+        </div>
+        <div className="grid grid-cols-7 gap-1">
+          {days.map((d, i) => {
+            const hasTasks = tasksForDate(d).length > 0;
+            return (
+              <button key={i} onClick={() => setSelected(d)} className={`aspect-square flex flex-col items-center justify-center rounded-xl text-sm transition-colors ${!isSameMonth(d, current) ? 'text-slate-300 dark:text-slate-600' : isToday(d) ? 'bg-emerald-600 text-white font-bold' : selected && isSameDay(d, selected) ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#334155]'}`}>
+                {format(d, 'd')}
+                {hasTasks && <div className="w-1 h-1 rounded-full bg-emerald-500 mt-0.5" />}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Calendar Grid */}
-        <div className="lg:col-span-3 rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
-          <div className="grid grid-cols-7 gap-1 text-center text-sm text-gray-500 mb-3">
-            {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((d) => (
-              <span key={d}>{d.slice(0, 3)}</span>
-            ))}
-          </div>
-          <div className="grid grid-cols-7 gap-1">
-            {Array(startDay).fill(null).map((_, i) => <div key={`e${i}`} className="h-24" />)}
-            {monthDays.map((day) => (
-              <div key={day.toISOString()} onClick={() => setSelected(day)}
-                className={`h-24 p-2 rounded-xl border cursor-pointer transition-colors ${
-                  isSameDay(day, selected) ? 'border-indigo-500 bg-indigo-500/5' :
-                  isToday(day) ? 'border-indigo-500/50 bg-indigo-500/5' : 'border-slate-200 dark:border-[#2a2a3e] hover:border-[#3a3a4e]'
-                }`}>
-                <span className={`text-xs ${isToday(day) ? 'text-indigo-400 font-bold' : 'text-gray-400'}`}>{format(day, 'd')}</span>
-                <div className="mt-1 space-y-0.5">
-                  {sampleEvents.filter((e) => isSameDay(e.date, day)).map((e) => (
-                    <div key={e.id} className={`${e.color} text-gray-900 dark:text-white text-[10px] px-1 py-0.5 rounded truncate`}>{e.title}</div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Right Panel */}
-        <div className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
-          <h3 className="text-white font-semibold mb-4">Events on {format(selected, 'MMM d')}</h3>
-          <div className="space-y-3">
-            {selectedEvents.length === 0 && <p className="text-gray-500 text-sm">No events</p>}
-            {selectedEvents.map((e) => (
-              <div key={e.id} className="p-3 rounded-xl bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e]">
-                <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${e.color}`} />
-                  <span className="text-sm text-gray-900 dark:text-white">{e.title}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="bg-white dark:bg-[#1E293B] rounded-2xl shadow-sm dark:shadow-none border border-slate-100 dark:border-[#475569] p-5">
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4">{selected ? format(selected, 'MMM d, yyyy') : 'Select a date'}</h3>
+        {selected ? (
+          tasksForDate(selected).length > 0 ? tasksForDate(selected).map(t => (
+            <div key={t.id} className="p-3 mb-2 rounded-xl bg-slate-50 dark:bg-[#0B1220] border border-slate-100 dark:border-[#475569]">
+              <p className="text-sm text-slate-800 dark:text-slate-200">{t.title}</p>
+              <p className="text-xs text-slate-400 mt-1">{t.status?.replace('_', ' ')}</p>
+            </div>
+          )) : <p className="text-sm text-slate-400">No tasks for this date</p>
+        ) : <p className="text-sm text-slate-400">Click a date to see tasks</p>}
       </div>
     </div>
   );

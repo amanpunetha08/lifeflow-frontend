@@ -1,204 +1,93 @@
-import { useState, useEffect } from 'react';
-import { HiPlus, HiFunnel, HiArrowPath } from 'react-icons/hi2';
+import { useEffect, useState } from 'react';
+import { HiOutlinePlus, HiOutlineTrash, HiOutlineArrowPath } from 'react-icons/hi2';
 import client from '../api/client';
 import toast from 'react-hot-toast';
 
-const priorityClass = { high: 'bg-rose-500/20 text-rose-400', medium: 'bg-amber-500/20 text-amber-400', low: 'bg-emerald-500/20 text-emerald-400' };
-const statusClass = { completed: 'bg-emerald-500/20 text-emerald-400', in_progress: 'bg-amber-500/20 text-amber-400', todo: 'bg-gray-500/20 text-gray-400', missed: 'bg-rose-500/20 text-rose-400' };
+const priorityColor = { high: 'bg-red-500', medium: 'bg-amber-500', low: 'bg-emerald-500' };
+const statusColor = { todo: 'text-slate-500', in_progress: 'text-cyan-500', completed: 'text-emerald-500', missed: 'text-red-500' };
+const typeBadge = { daily: 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400', timeframe: 'bg-cyan-100 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-400' };
 
 export default function Tasks() {
   const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [view, setView] = useState('list');
-  const [showAdd, setShowAdd] = useState(false);
-  const [newTask, setNewTask] = useState({ title: '', priority: 'medium', task_type: 'daily' });
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ title: '', task_type: 'daily', priority: 'medium', start_time: '', end_time: '', duration_days: 1 });
 
-  useEffect(() => {
-    client.get('/tasks/today/').then((r) => setTasks(r.data?.results || r.data || [])).catch(() => {});
-  }, []);
+  const fetchTasks = () => { client.get('/tasks/today/').then(r => setTasks(r.data.results || r.data || [])).catch(() => toast.error('Failed to load')).finally(() => setLoading(false)); };
+  useEffect(fetchTasks, []);
 
   const addTask = async (e) => {
     e.preventDefault();
     try {
-      const payload = { ...newTask };
-      // Build start_time and end_time from time inputs for timeframe tasks
-      if (payload.task_type === 'timeframe' && payload.start_time_input) {
-        const today = new Date().toISOString().split('T')[0];
-        payload.start_time = `${today}T${payload.start_time_input}:00`;
-        if (payload.end_time_input) payload.end_time = `${today}T${payload.end_time_input}:00`;
-      }
-      delete payload.start_time_input;
-      delete payload.end_time_input;
-      const { data } = await client.post('/tasks/', payload);
-      setTasks((prev) => [data, ...prev]);
-      setShowAdd(false);
-      setNewTask({ title: '', priority: 'medium', task_type: 'daily' });
-      toast.success('Task created!');
-    } catch { toast.error('Failed to create task'); }
+      await client.post('/tasks/', form);
+      toast.success('Task added');
+      setShowForm(false);
+      setForm({ title: '', task_type: 'daily', priority: 'medium', start_time: '', end_time: '', duration_days: 1 });
+      fetchTasks();
+    } catch { toast.error('Failed to add task'); }
   };
 
-  const deleteTask = async (id) => {
-    try {
-      await client.delete(`/tasks/${id}/`);
-      setTasks((prev) => prev.filter((t) => t.id !== id));
-      toast.success('Deleted');
-    } catch { toast.error('Failed'); }
-  };
+  const deleteTask = async (id) => { try { await client.delete(`/tasks/${id}/`); setTasks(tasks.filter(t => t.id !== id)); } catch { toast.error('Failed'); } };
+  const resetDay = async () => { try { await client.post('/tasks/reset/'); fetchTasks(); toast.success('Day reset'); } catch { toast.error('Failed'); } };
 
-  const resetToday = async () => {
-    if (!confirm('This will mark all pending tasks as missed, apply demerits, and create fresh tasks. Continue?')) return;
-    try {
-      const { data } = await client.post('/tasks/reset_today/');
-      toast.success(`Reset done! ${data.created.length} tasks created.`);
-      client.get('/tasks/today/').then((r) => setTasks(r.data?.results || r.data || []));
-    } catch { toast.error('Reset failed'); }
-  };
+  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
 
-  const columns = ['todo', 'in_progress', 'completed'];
+  const grouped = { todo: tasks.filter(t => t.status === 'todo'), in_progress: tasks.filter(t => t.status === 'in_progress'), completed: tasks.filter(t => t.status === 'completed') };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex gap-2">
-          {['list', 'board', 'card'].map((v) => (
-            <button key={v} onClick={() => setView(v)}
-              className={`px-4 py-2 rounded-xl text-sm ${view === v ? 'bg-indigo-500/20 text-indigo-400' : 'text-gray-400 hover:text-white'}`}>
-              {v.charAt(0).toUpperCase() + v.slice(1)}
-            </button>
-          ))}
+        <div className="flex gap-1 bg-white dark:bg-[#1E293B] rounded-xl p-1 border border-slate-200 dark:border-[#475569]">
+          {['list', 'board', 'card'].map(v => <button key={v} onClick={() => setView(v)} className={`px-3 py-1.5 text-sm rounded-lg capitalize transition-colors ${view === v ? 'bg-emerald-600 text-white' : 'text-slate-600 dark:text-slate-400'}`}>{v}</button>)}
         </div>
         <div className="flex gap-2">
-          <button onClick={resetToday} className="flex items-center gap-1 border border-rose-500/30 text-rose-400 rounded-xl px-4 py-2 text-sm hover:bg-rose-500/10">
-            <HiArrowPath className="w-4 h-4" /> Reset Day
-          </button>
-          <button className="flex items-center gap-1 border border-slate-200 dark:border-[#2a2a3e] text-gray-400 rounded-xl px-4 py-2 text-sm hover:text-gray-900 dark:text-white">
-            <HiFunnel className="w-4 h-4" /> Filter
-          </button>
-          <button onClick={() => setShowAdd(true)} className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-gray-900 dark:text-white rounded-xl px-4 py-2 text-sm">
-            <HiPlus className="w-4 h-4" /> Add Task
-          </button>
+          <button onClick={resetDay} className="flex items-center gap-1 px-3 py-2 text-sm border border-slate-200 dark:border-[#475569] rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#334155] transition-colors"><HiOutlineArrowPath className="w-4 h-4" />Reset</button>
+          <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-1 px-3 py-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-colors"><HiOutlinePlus className="w-4 h-4" />Add Task</button>
         </div>
       </div>
 
-      {/* Add Task Modal */}
-      {showAdd && (
-        <div className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e] space-y-4">
-          <h3 className="text-white font-semibold">Create New Task</h3>
-          <form onSubmit={addTask} className="space-y-4">
-            {/* Step 1: Title */}
-            <div>
-              <label className="text-sm text-gray-400 block mb-1">Task Name</label>
-              <input value={newTask.title} onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                className="w-full bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-gray-900 dark:text-white" placeholder="What needs to be done?" required />
-            </div>
-
-            {/* Step 2: Type */}
-            <div>
-              <label className="text-sm text-gray-400 block mb-2">Task Type</label>
-              <div className="grid grid-cols-2 gap-3">
-                <button type="button" onClick={() => setNewTask({ ...newTask, task_type: 'daily', priority: 'high' })}
-                  className={`p-4 rounded-xl border text-left ${newTask.task_type === 'daily' ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-200 dark:border-[#2a2a3e] bg-slate-100 dark:bg-[#0f0f1a]'}`}>
-                  <div className="text-lg mb-1">📅</div>
-                  <div className="text-sm font-medium text-gray-900 dark:text-white">Daily Routine</div>
-                  <div className="text-xs text-gray-500 mt-1">Repeats every day • High priority • +10 XP</div>
-                </button>
-                <button type="button" onClick={() => setNewTask({ ...newTask, task_type: 'timeframe', priority: 'medium' })}
-                  className={`p-4 rounded-xl border text-left ${newTask.task_type === 'timeframe' ? 'border-amber-500 bg-amber-500/10' : 'border-slate-200 dark:border-[#2a2a3e] bg-slate-100 dark:bg-[#0f0f1a]'}`}>
-                  <div className="text-lg mb-1">⏰</div>
-                  <div className="text-sm font-medium text-gray-900 dark:text-white">Time-Based</div>
-                  <div className="text-xs text-gray-500 mt-1">One-time or multi-day • Custom priority</div>
-                </button>
-              </div>
-            </div>
-
-            {/* Step 3: Priority (only for time-based) */}
-            {newTask.task_type === 'timeframe' && (
-              <div>
-                <label className="text-sm text-gray-400 block mb-2">Priority & XP</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { val: 'low', label: 'Low', xp: '+5 XP', penalty: '-10 XP', color: 'emerald' },
-                    { val: 'medium', label: 'Medium', xp: '+8 XP', penalty: '-16 XP', color: 'amber' },
-                    { val: 'high', label: 'High', xp: '+10 XP', penalty: '-20 XP', color: 'rose' },
-                  ].map((p) => (
-                    <button key={p.val} type="button" onClick={() => setNewTask({ ...newTask, priority: p.val })}
-                      className={`p-3 rounded-xl border text-center ${newTask.priority === p.val ? `border-${p.color}-500 bg-${p.color}-500/10` : 'border-slate-200 dark:border-[#2a2a3e] bg-slate-100 dark:bg-[#0f0f1a]'}`}>
-                      <div className={`text-sm font-medium ${newTask.priority === p.val ? `text-${p.color}-400` : 'text-white'}`}>{p.label}</div>
-                      <div className="text-xs text-gray-500">{p.xp}</div>
-                      <div className="text-xs text-rose-400/70">Miss: {p.penalty}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Daily info */}
-            {newTask.task_type === 'daily' && (
-              <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-3">
-                <p className="text-sm text-indigo-300">✓ High priority • +10 XP on complete • -20 XP if missed • Auto-repeats daily</p>
-              </div>
-            )}
-
-            {/* Timeframe fields */}
-            {newTask.task_type === 'timeframe' && (<>
-              <div>
-                <label className="text-sm text-gray-400 block mb-1">Start Time</label>
-                <input type="time" value={newTask.start_time_input || ''} onChange={(e) => setNewTask({ ...newTask, start_time_input: e.target.value })}
-                  className="w-full bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-gray-900 dark:text-white" />
-              </div>
-              <div>
-                <label className="text-sm text-gray-400 block mb-1">End Time</label>
-                <input type="time" value={newTask.end_time_input || ''} onChange={(e) => setNewTask({ ...newTask, end_time_input: e.target.value })}
-                  className="w-full bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-gray-900 dark:text-white" />
-              </div>
-              <div>
-                <label className="text-sm text-gray-400 block mb-1">Duration (days, optional)</label>
-                <input type="number" min="1" value={newTask.timeframe_days || ''} onChange={(e) => setNewTask({ ...newTask, timeframe_days: parseInt(e.target.value) || null })}
-                  className="w-full bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-gray-900 dark:text-white" placeholder="Leave empty for single task" />
-              </div>
-            </>)}
-
-            <div className="flex gap-3">
-              <button type="submit" className="bg-indigo-500 hover:bg-indigo-600 text-gray-900 dark:text-white rounded-xl px-6 py-3 text-sm font-medium">Create Task</button>
-              <button type="button" onClick={() => setShowAdd(false)} className="text-gray-400 hover:text-white px-4 py-3 text-sm">Cancel</button>
-            </div>
-          </form>
-        </div>
+      {showForm && (
+        <form onSubmit={addTask} className="p-5 bg-white dark:bg-[#1E293B] rounded-2xl border border-slate-200 dark:border-[#475569] shadow-sm dark:shadow-none space-y-4">
+          <input type="text" required placeholder="Task title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#475569] bg-white dark:bg-[#0B1220] text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <select value={form.task_type} onChange={e => setForm({ ...form, task_type: e.target.value })} className="px-3 py-2 rounded-xl border border-slate-200 dark:border-[#475569] bg-white dark:bg-[#0B1220] text-sm text-slate-700 dark:text-slate-300">
+              <option value="daily">Daily</option><option value="timeframe">Timeframe</option>
+            </select>
+            <select value={form.priority} onChange={e => setForm({ ...form, priority: e.target.value })} className="px-3 py-2 rounded-xl border border-slate-200 dark:border-[#475569] bg-white dark:bg-[#0B1220] text-sm text-slate-700 dark:text-slate-300">
+              <option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option>
+            </select>
+            <input type="time" value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} className="px-3 py-2 rounded-xl border border-slate-200 dark:border-[#475569] bg-white dark:bg-[#0B1220] text-sm text-slate-700 dark:text-slate-300" />
+            <input type="time" value={form.end_time} onChange={e => setForm({ ...form, end_time: e.target.value })} className="px-3 py-2 rounded-xl border border-slate-200 dark:border-[#475569] bg-white dark:bg-[#0B1220] text-sm text-slate-700 dark:text-slate-300" />
+          </div>
+          <button type="submit" className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded-xl transition-colors">Save Task</button>
+        </form>
       )}
 
-      {/* List View */}
       {view === 'list' && (
-        <div className="rounded-2xl bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e] overflow-hidden">
-          <div className="grid grid-cols-[1fr_100px_120px_100px_80px_60px] gap-4 px-6 py-3 text-xs text-gray-500 border-b border-slate-200 dark:border-[#2a2a3e]">
-            <span>Title</span><span>Priority</span><span>Time</span><span>Status</span><span>XP</span><span></span>
-          </div>
-          {tasks.map((task) => (
-            <div key={task.id} className="grid grid-cols-[1fr_80px_100px_120px_100px_80px_60px] gap-4 px-6 py-4 items-center border-b border-slate-200 dark:border-[#2a2a3e] last:border-0">
-              <span className="text-white text-sm truncate">{task.title}</span>
-              <span className={`text-xs px-2 py-0.5 rounded-full w-fit ${task.task_type === 'daily' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-400'}`}>{task.task_type === 'daily' ? '📅 Daily' : '⏰ Timed'}</span>
-              <span className={`text-xs px-2 py-0.5 rounded-full w-fit ${priorityClass[task.priority] || ''}`}>{task.priority}</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">{task.start_time ? new Date(task.start_time).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true}) : '--'}</span>
-              <span className={`text-xs px-2 py-0.5 rounded-full w-fit ${statusClass[task.status] || ''}`}>{task.status}</span>
-              <span className="text-xs text-indigo-400">+{task.xp_reward || 10}</span>
-              <button onClick={() => deleteTask(task.id)} className="text-gray-500 hover:text-rose-400 text-xs">✕</button>
+        <div className="bg-white dark:bg-[#1E293B] rounded-2xl border border-slate-100 dark:border-[#475569] shadow-sm dark:shadow-none overflow-hidden">
+          {tasks.length === 0 ? <p className="text-sm text-slate-400 py-12 text-center">No tasks yet</p> : tasks.map(task => (
+            <div key={task.id} className="flex items-center gap-3 px-5 py-3 border-b border-slate-100 dark:border-[#475569] last:border-0 hover:bg-slate-50 dark:hover:bg-[#334155] transition-colors">
+              <div className={`w-2 h-2 rounded-full ${priorityColor[task.priority] || 'bg-slate-400'}`} />
+              <span className="flex-1 text-sm text-slate-800 dark:text-slate-200">{task.title}</span>
+              <span className={`text-xs px-2 py-0.5 rounded-lg ${typeBadge[task.task_type] || typeBadge.daily}`}>{task.task_type}</span>
+              <span className={`text-xs font-medium ${statusColor[task.status]}`}>{task.status?.replace('_', ' ')}</span>
+              {task.xp && <span className="text-xs text-emerald-500">+{task.xp}xp</span>}
+              <button onClick={() => deleteTask(task.id)} className="text-slate-400 hover:text-red-500 transition-colors"><HiOutlineTrash className="w-4 h-4" /></button>
             </div>
           ))}
         </div>
       )}
 
-      {/* Board View */}
       {view === 'board' && (
-        <div className="grid grid-cols-3 gap-4">
-          {columns.map((col) => (
-            <div key={col} className="rounded-2xl p-4 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
-              <h4 className="text-sm font-medium text-gray-300 mb-3 capitalize">{col.replace('_', ' ')}</h4>
+        <div className="grid md:grid-cols-3 gap-4">
+          {Object.entries(grouped).map(([status, items]) => (
+            <div key={status} className="bg-white dark:bg-[#1E293B] rounded-2xl border border-slate-100 dark:border-[#475569] shadow-sm dark:shadow-none p-4">
+              <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 capitalize">{status.replace('_', ' ')} ({items.length})</h4>
               <div className="space-y-2">
-                {tasks.filter((t) => t.status === col).map((task) => (
-                  <div key={task.id} className="p-3 rounded-xl bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e]">
-                    <p className="text-sm text-gray-900 dark:text-white mb-2">{task.title}</p>
-                    <div className="flex items-center justify-between">
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${priorityClass[task.priority] || ''}`}>{task.priority}</span>
-                      <span className="text-xs text-indigo-400">+{task.xp_reward || 10} XP</span>
-                    </div>
+                {items.map(task => (
+                  <div key={task.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#0B1220] border border-slate-100 dark:border-[#475569]">
+                    <div className="flex items-center gap-2"><div className={`w-2 h-2 rounded-full ${priorityColor[task.priority] || 'bg-slate-400'}`} /><span className="text-sm text-slate-800 dark:text-slate-200">{task.title}</span></div>
                   </div>
                 ))}
               </div>
@@ -207,19 +96,18 @@ export default function Tasks() {
         </div>
       )}
 
-      {/* Card View */}
       {view === 'card' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tasks.map((task) => (
-            <div key={task.id} className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
-              <div className="flex items-start justify-between mb-3">
-                <h4 className="text-white font-medium">{task.title}</h4>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${priorityClass[task.priority] || ''}`}>{task.priority}</span>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {tasks.map(task => (
+            <div key={task.id} className="p-4 bg-white dark:bg-[#1E293B] rounded-2xl border border-slate-100 dark:border-[#475569] shadow-sm dark:shadow-none">
+              <div className="flex items-center justify-between mb-2">
+                <span className={`text-xs px-2 py-0.5 rounded-lg ${typeBadge[task.task_type] || typeBadge.daily}`}>{task.task_type}</span>
+                <div className={`w-2 h-2 rounded-full ${priorityColor[task.priority] || 'bg-slate-400'}`} />
               </div>
-              <p className="text-xs text-gray-400 mb-3">{task.start_time ? new Date(task.start_time).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true}) : ''} - {task.end_time ? new Date(task.end_time).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true}) : ''}</p>
+              <h4 className="text-sm font-medium text-slate-800 dark:text-slate-200 mb-2">{task.title}</h4>
               <div className="flex items-center justify-between">
-                <span className={`text-xs px-2 py-0.5 rounded-full ${statusClass[task.status] || ''}`}>{task.status}</span>
-                <span className="text-xs text-indigo-400">+{task.xp_reward || 10} XP</span>
+                <span className={`text-xs ${statusColor[task.status]}`}>{task.status?.replace('_', ' ')}</span>
+                {task.xp && <span className="text-xs text-emerald-500">+{task.xp}xp</span>}
               </div>
             </div>
           ))}

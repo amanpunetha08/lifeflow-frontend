@@ -1,142 +1,84 @@
-import { useState, useEffect } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import { HiPlus } from 'react-icons/hi2';
+import { useEffect, useState } from 'react';
+import { HiOutlineClipboardDocumentList, HiOutlineCheckCircle, HiOutlineChartBarSquare, HiOutlineClock, HiOutlineFire } from 'react-icons/hi2';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import client from '../api/client';
-import useAuthStore from '../store/authStore';
 import toast from 'react-hot-toast';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, isSameMonth } from 'date-fns';
-
-const COLORS = { completed: '#10b981', in_progress: '#f59e0b', todo: '#6b7280', missed: '#f43f5e' };
 
 export default function Dashboard() {
-  const user = useAuthStore((s) => s.user);
   const [tasks, setTasks] = useState([]);
   const [analytics, setAnalytics] = useState(null);
-  const [tab, setTab] = useState('all');
   const [loading, setLoading] = useState(true);
-  const [currentMonth] = useState(new Date());
 
   useEffect(() => {
-    Promise.all([
-      client.get('/tasks/today/').then((r) => setTasks(r.data?.results || r.data || [])).catch(() => {}),
-      client.get('/analytics/').then((r) => setAnalytics(r.data)).catch(() => {}),
-      client.post('/scheduler/rules/process_expired/').catch(() => {}),
-    ]).finally(() => setLoading(false));
+    Promise.all([client.get('/tasks/today/'), client.get('/analytics/')])
+      .then(([t, a]) => { setTasks(t.data.results || t.data || []); setAnalytics(a.data); })
+      .catch(() => toast.error('Failed to load data'))
+      .finally(() => setLoading(false));
   }, []);
-
-  const stats = {
-    completed: tasks.filter((t) => t.status === 'completed').length,
-    in_progress: tasks.filter((t) => t.status === 'in_progress').length,
-    todo: tasks.filter((t) => t.status === 'todo').length,
-    missed: tasks.filter((t) => t.status === 'missed').length,
-  };
-  const total = tasks.length || 1;
-  const progress = Math.round((stats.completed / total) * 100);
-  const donutData = Object.entries(stats).map(([name, value]) => ({ name, value: value || 0 }));
-  const xpToday = analytics?.stats?.xp_today ?? tasks.filter(t => t.status === 'completed').reduce((s, t) => s + (t.xp_reward || 10), 0);
-  const sparkData = analytics?.daily_xp?.map(d => ({ v: d.xp })) || [{ v: 0 }];
-
-  const filtered = tab === 'all' ? tasks : tasks.filter((t) => t.status === tab);
 
   const completeTask = async (id) => {
     try {
       await client.post(`/tasks/${id}/complete/`);
-      setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: 'completed' } : t)));
-      toast.success('Task completed! +XP');
-    } catch { toast.error('Failed'); }
+      setTasks(tasks.map(t => t.id === id ? { ...t, status: 'completed' } : t));
+      toast.success('Task completed! 🎉');
+    } catch { toast.error('Failed to complete task'); }
   };
 
-  const monthDays = eachDayOfInterval({ start: startOfMonth(currentMonth), end: endOfMonth(currentMonth) });
-  const startDay = startOfMonth(currentMonth).getDay();
+  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
 
-  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" /></div>;
+  const completed = tasks.filter(t => t.status === 'completed').length;
+  const stats = [
+    { icon: HiOutlineClipboardDocumentList, label: "Today's Tasks", value: tasks.length, color: 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600' },
+    { icon: HiOutlineCheckCircle, label: 'Completed', value: completed, color: 'bg-green-100 dark:bg-green-500/10 text-green-600' },
+    { icon: HiOutlineChartBarSquare, label: 'Productivity', value: `${analytics?.productivity_score || 0}%`, color: 'bg-cyan-100 dark:bg-cyan-500/10 text-cyan-600' },
+    { icon: HiOutlineClock, label: 'Focus Time', value: `${analytics?.focus_time || 0}h`, color: 'bg-amber-100 dark:bg-amber-500/10 text-amber-600' },
+    { icon: HiOutlineFire, label: 'Streak', value: `${analytics?.streak || 0}d`, color: 'bg-red-100 dark:bg-red-500/10 text-red-600' },
+  ];
+
+  const weeklyData = analytics?.weekly || [{ day: 'Mon', score: 0 }, { day: 'Tue', score: 0 }, { day: 'Wed', score: 0 }, { day: 'Thu', score: 0 }, { day: 'Fri', score: 0 }, { day: 'Sat', score: 0 }, { day: 'Sun', score: 0 }];
+
+  const priorityColor = { high: 'bg-red-500', medium: 'bg-amber-500', low: 'bg-emerald-500' };
+  const statusBadge = { todo: 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300', in_progress: 'bg-cyan-100 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-400', completed: 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400', missed: 'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400' };
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
-          <p className="text-gray-400 text-sm mb-3">Tasks Overview</p>
-          <div className="flex items-center gap-4">
-            <div className="w-20 h-20">
-              <ResponsiveContainer>
-                <PieChart><Pie data={donutData} innerRadius={25} outerRadius={35} dataKey="value" strokeWidth={0}>
-                  {donutData.map((_, i) => <Cell key={i} fill={Object.values(COLORS)[i]} />)}
-                </Pie></PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="text-sm space-y-1">
-              <p className="text-white font-bold">{tasks.length} total</p>
-              <p className="text-emerald-400">{stats.completed} done</p>
-              <p className="text-amber-400">{stats.in_progress} active</p>
-            </div>
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        {stats.map(({ icon: Icon, label, value, color }) => (
+          <div key={label} className="p-4 bg-white dark:bg-[#1E293B] rounded-2xl shadow-sm dark:shadow-none border border-slate-100 dark:border-[#475569]">
+            <div className={`w-9 h-9 rounded-xl ${color} flex items-center justify-center mb-3`}><Icon className="w-5 h-5" /></div>
+            <p className="text-2xl font-bold text-slate-900 dark:text-slate-50">{value}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
           </div>
-        </div>
-        <div className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e] flex flex-col items-center justify-center">
-          <p className="text-gray-400 text-sm mb-2">Today's Progress</p>
-          <div className="relative w-20 h-20">
-            <svg className="w-full h-full -rotate-90">
-              <circle cx="40" cy="40" r="34" fill="none" stroke="#2a2a3e" strokeWidth="6" />
-              <circle cx="40" cy="40" r="34" fill="none" stroke="#6366f1" strokeWidth="6" strokeDasharray={`${progress * 2.14} 214`} strokeLinecap="round" />
-            </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-gray-900 dark:text-white font-bold text-sm">{progress}%</span>
-          </div>
-        </div>
-        <div className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
-          <p className="text-gray-400 text-sm mb-2">XP Earned Today</p>
-          <p className="text-2xl font-bold text-emerald-400">+{xpToday} XP</p>
-          <div className="h-12 mt-2">
-            <ResponsiveContainer><AreaChart data={sparkData}><Area type="monotone" dataKey="v" stroke="#6366f1" fill="#6366f1" fillOpacity={0.1} strokeWidth={2} /></AreaChart></ResponsiveContainer>
-          </div>
-        </div>
-        <div className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
-          <p className="text-gray-400 text-sm mb-2">Discipline Score</p>
-          <p className="text-4xl font-bold text-gray-900 dark:text-white">{user?.discipline_score || analytics?.stats?.discipline_score || 0}<span className="text-lg text-gray-500 dark:text-gray-400">/100</span></p>
-          <p className="text-emerald-400 text-sm mt-1">Level {user?.level || 1} • {user?.xp || 0} XP</p>
-        </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Today's Tasks</h3>
-            <button className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-gray-900 dark:text-white rounded-xl px-4 py-2 text-sm"><HiPlus className="w-4 h-4" /> Add Task</button>
-          </div>
-          <div className="flex gap-2 mb-4">
-            {['all', 'todo', 'in_progress', 'completed'].map((t) => (
-              <button key={t} onClick={() => setTab(t)} className={`px-3 py-1.5 rounded-lg text-sm ${tab === t ? 'bg-indigo-500/20 text-indigo-400' : 'text-gray-400 hover:text-white'}`}>
-                {t === 'all' ? 'All' : t === 'in_progress' ? 'In Progress' : t.charAt(0).toUpperCase() + t.slice(1)}
-              </button>
-            ))}
-          </div>
-          <div className="space-y-2">
-            {filtered.length === 0 && <p className="text-gray-500 text-sm">No tasks</p>}
-            {filtered.map((task) => (
-              <div key={task.id} className="flex items-center gap-3 p-3 rounded-xl bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e]">
-                <input type="checkbox" checked={task.status === 'completed'} onChange={() => completeTask(task.id)} className="w-5 h-5 rounded-full" />
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm ${task.status === 'completed' ? 'text-gray-500 line-through' : 'text-white'}`}>{task.title}</p>
-                  <p className="text-xs text-gray-500">{task.start_time} - {task.end_time}</p>
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-white dark:bg-[#1E293B] rounded-2xl shadow-sm dark:shadow-none border border-slate-100 dark:border-[#475569] p-5">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4">Today's Tasks</h3>
+          {tasks.length === 0 ? <p className="text-sm text-slate-400 py-8 text-center">No tasks for today. Add some!</p> : (
+            <div className="space-y-2">
+              {tasks.slice(0, 8).map(task => (
+                <div key={task.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-[#334155] transition-colors">
+                  <div className={`w-2 h-2 rounded-full ${priorityColor[task.priority] || 'bg-slate-400'}`} />
+                  <span className={`flex-1 text-sm ${task.status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}>{task.title}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-lg ${statusBadge[task.status] || statusBadge.todo}`}>{task.status?.replace('_', ' ')}</span>
+                  {task.xp && <span className="text-xs text-emerald-500 font-medium">+{task.xp}xp</span>}
+                  {task.status !== 'completed' && <button onClick={() => completeTask(task.id)} className="text-xs px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors">Done</button>}
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${task.priority === 'high' ? 'bg-rose-500/20 text-rose-400' : task.priority === 'medium' ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}`}>{task.priority}</span>
-                <span className="text-xs text-indigo-400">+{task.xp_reward || 10} XP</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
-
-        <div className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{format(currentMonth, 'MMMM yyyy')}</h3>
-          <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-2">
-            {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => <span key={d}>{d}</span>)}
-          </div>
-          <div className="grid grid-cols-7 gap-1">
-            {Array(startDay).fill(null).map((_, i) => <span key={`e${i}`} />)}
-            {monthDays.map((day) => (
-              <span key={day.toISOString()} className={`w-8 h-8 flex items-center justify-center rounded-full text-xs ${isToday(day) ? 'bg-indigo-500 text-gray-900 dark:text-white' : isSameMonth(day, currentMonth) ? 'text-gray-300 hover:bg-white/5' : 'text-gray-600'}`}>
-                {format(day, 'd')}
-              </span>
-            ))}
-          </div>
+        <div className="bg-white dark:bg-[#1E293B] rounded-2xl shadow-sm dark:shadow-none border border-slate-100 dark:border-[#475569] p-5">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4">Weekly Productivity</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={weeklyData}>
+              <XAxis dataKey="day" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+              <YAxis hide />
+              <Tooltip contentStyle={{ background: '#1E293B', border: '1px solid #475569', borderRadius: 12, color: '#f8fafc' }} />
+              <Line type="monotone" dataKey="score" stroke="#10b981" strokeWidth={2} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>

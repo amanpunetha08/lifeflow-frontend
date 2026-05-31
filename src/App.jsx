@@ -26,10 +26,7 @@ export default function App() {
         <Route path="/habits" element={<Habits />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/focus" element={<FocusMode />} />
-        <Route path="/journal" element={<div className="text-white">Journal - Coming Soon</div>} />
-        <Route path="/challenges" element={<div className="text-white">Challenges - Coming Soon</div>} />
         <Route path="/achievements" element={<Achievements />} />
-        <Route path="/rewards" element={<div className="text-white">Rewards Store - Coming Soon</div>} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/profile" element={<Profile />} />
       </Route>
