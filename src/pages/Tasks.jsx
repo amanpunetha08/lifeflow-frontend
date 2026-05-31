@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { HiOutlinePlus, HiOutlineTrash, HiOutlineArrowPath } from 'react-icons/hi2';
 import client from '../api/client';
-import useAnalyticsStore from '../store/analyticsStore';
-import useTasksStore from '../store/tasksStore';
+import { useTasksStore } from '../store/dataStore';
 import toast from 'react-hot-toast';
 
 const priorityColor = { high: 'bg-red-500', medium: 'bg-amber-500', low: 'bg-emerald-500' };

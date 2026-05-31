@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { HiOutlineClipboardDocumentList, HiOutlineCheckCircle, HiOutlineChartBarSquare, HiOutlineClock, HiOutlineFire } from 'react-icons/hi2';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import client from '../api/client';
-import useAnalyticsStore from '../store/analyticsStore';
-import useTasksStore from '../store/tasksStore';
+import { useTasksStore, useAnalyticsStore } from '../store/dataStore';
 import toast from 'react-hot-toast';
 
 function StreakHeatmap({ data }) {

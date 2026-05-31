@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { HiOutlineTrophy } from 'react-icons/hi2';
-import client from '../api/client';
-import toast from 'react-hot-toast';
+import { useAchievementsStore } from '../store/dataStore';
 
 export default function Achievements() {
-  const [achievements, setAchievements] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const achievements = useAchievementsStore(s => s.data) || [];
+  const loading = useAchievementsStore(s => s.loading);
+  const fetch = useAchievementsStore(s => s.fetch);
   const [tab, setTab] = useState('all');
 
-  useEffect(() => { client.get('/gamification/achievements/').then(r => setAchievements(r.data.results || r.data || [])).catch(() => toast.error('Failed to load')).finally(() => setLoading(false)); }, []);
+  useEffect(() => { fetch(); }, []);
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
 

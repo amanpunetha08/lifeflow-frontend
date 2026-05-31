@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { HiOutlineCheckCircle, HiOutlineClock, HiOutlineChartBarSquare, HiOutlineShieldCheck } from 'react-icons/hi2';
-import useAnalyticsStore from '../store/analyticsStore';
+import { useAnalyticsStore } from '../store/dataStore';
 import toast from 'react-hot-toast';
 
 export default function Analytics() {

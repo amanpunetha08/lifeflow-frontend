@@ -1,17 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { HiOutlineFire } from 'react-icons/hi2';
-import client from '../api/client';
-import toast from 'react-hot-toast';
+import { useHabitsStore } from '../store/dataStore';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export default function Habits() {
-  const [habits, setHabits] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const habits = useHabitsStore(s => s.data) || [];
+  const loading = useHabitsStore(s => s.loading);
+  const fetch = useHabitsStore(s => s.fetch);
 
-  useEffect(() => { client.get('/tasks/habits/').then(r => setHabits(r.data.results || r.data || [])).catch(() => toast.error('Failed to load')).finally(() => setLoading(false)); }, []);
+  useEffect(() => { fetch(); }, []);
 
-  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading && !habits.length) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
 
   if (habits.length === 0) return (
     <div className="flex flex-col items-center justify-center py-20">
