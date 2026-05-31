@@ -20,9 +20,12 @@ export default function Analytics() {
     { icon: HiOutlineShieldCheck, label: 'Discipline', value: `${data.discipline_score || 0}%`, color: 'bg-red-100 dark:bg-red-500/10 text-red-600' },
   ];
 
-  const weekly = data.weekly || [{ day: 'Mon', score: 65 }, { day: 'Tue', score: 72 }, { day: 'Wed', score: 80 }, { day: 'Thu', score: 68 }, { day: 'Fri', score: 90 }, { day: 'Sat', score: 55 }, { day: 'Sun', score: 45 }];
-  const completion = data.completion || [{ name: 'Completed', value: 70 }, { name: 'Missed', value: 20 }, { name: 'Pending', value: 10 }];
-  const xpData = data.daily_xp || weekly.map(d => ({ ...d, xp: Math.round(d.score * 1.5) }));
+  const weekly = data.weekly_trend || [];
+  const breakdown = data.task_breakdown || {};
+  const completion = Object.entries(breakdown).length > 0
+    ? [{ name: 'Completed', value: breakdown.completed || 0 }, { name: 'Missed', value: breakdown.missed || 0 }, { name: 'Pending', value: (breakdown.todo || 0) + (breakdown.in_progress || 0) }]
+    : [];
+  const xpData = data.daily_xp || [];
   const COLORS = ['#10b981', '#ef4444', '#94a3b8'];
 
   return (
@@ -79,10 +82,10 @@ export default function Analytics() {
 
         <div className="bg-white dark:bg-[#1E293B] rounded-2xl shadow-sm dark:shadow-none border border-slate-100 dark:border-[#475569] p-5">
           <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4">Habit Consistency</h3>
-          {(data.habits || [{ name: 'Exercise', pct: 85 }, { name: 'Reading', pct: 70 }, { name: 'Meditation', pct: 60 }]).map(h => (
+          {(data.habit_consistency || []).map(h => (
             <div key={h.name} className="mb-3">
-              <div className="flex justify-between text-xs mb-1"><span className="text-slate-600 dark:text-slate-300">{h.name}</span><span className="text-slate-400">{h.pct}%</span></div>
-              <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full"><div className="h-full bg-emerald-500 rounded-full" style={{ width: `${h.pct}%` }} /></div>
+              <div className="flex justify-between text-xs mb-1"><span className="text-slate-600 dark:text-slate-300">{h.name}</span><span className="text-slate-400">{Math.round((h.completed / h.total) * 100)}%</span></div>
+              <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full"><div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(h.completed / h.total) * 100}%` }} /></div>
             </div>
           ))}
         </div>
