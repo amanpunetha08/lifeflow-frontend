@@ -138,8 +138,8 @@ export default function Tasks() {
               </div>
             )}
 
-            {/* Timeframe days */}
-            {newTask.task_type === 'timeframe' && (
+            {/* Timeframe fields */}
+            {newTask.task_type === 'timeframe' && (<>
               <div>
                 <label className="text-sm text-gray-400 block mb-1">Start Time</label>
                 <input type="time" value={newTask.start_time_input || ''} onChange={(e) => setNewTask({ ...newTask, start_time_input: e.target.value })}
@@ -155,7 +155,7 @@ export default function Tasks() {
                 <input type="number" min="1" value={newTask.timeframe_days || ''} onChange={(e) => setNewTask({ ...newTask, timeframe_days: parseInt(e.target.value) || null })}
                   className="w-full bg-[#0f0f1a] border border-[#2a2a3e] rounded-xl px-4 py-3 text-white" placeholder="Leave empty for single task" />
               </div>
-            )}
+            </>)}
 
             <div className="flex gap-3">
               <button type="submit" className="bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-6 py-3 text-sm font-medium">Create Task</button>
