@@ -3,6 +3,7 @@ import { HiOutlineClipboardDocumentList, HiOutlineCheckCircle, HiOutlineChartBar
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import client from '../api/client';
 import useAnalyticsStore from '../store/analyticsStore';
+import useTasksStore from '../store/tasksStore';
 import toast from 'react-hot-toast';
 
 function StreakHeatmap({ data }) {
@@ -75,26 +76,24 @@ function StreakHeatmap({ data }) {
 }
 
 export default function Dashboard() {
-  const [tasks, setTasks] = useState([]);
+  const tasks = useTasksStore(s => s.tasks);
+  const fetchTasks = useTasksStore(s => s.fetch);
+  const tasksLoading = useTasksStore(s => s.loading);
   const fetchAnalytics = useAnalyticsStore(s => s.fetch);
-  const cachedAnalytics = useAnalyticsStore(s => s.data);
-  const [loading, setLoading] = useState(true);
+  const analytics = useAnalyticsStore(s => s.data);
+  const loading = tasksLoading && !analytics;
 
   useEffect(() => {
     fetchAnalytics();
-    client.get('/tasks/today/')
-      .then((t) => { setTasks(t.data.results || t.data || []); })
-      .catch(() => toast.error('Failed to load data'))
-      .finally(() => setLoading(false));
+    fetchTasks();
   }, []);
-
-  const analytics = cachedAnalytics;
 
   const completeTask = async (id) => {
     try {
       await client.post(`/tasks/${id}/complete/`);
-      setTasks(tasks.map(t => t.id === id ? { ...t, status: 'completed' } : t));
-      useAnalyticsStore.getState().invalidate();
+      useTasksStore.getState().invalidate();
+      fetchTasks();
+      fetchAnalytics();
       toast.success('Task completed! 🎉');
     } catch { toast.error('Failed to complete task'); }
   };

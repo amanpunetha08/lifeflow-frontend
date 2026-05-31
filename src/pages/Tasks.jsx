@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { HiOutlinePlus, HiOutlineTrash, HiOutlineArrowPath } from 'react-icons/hi2';
 import client from '../api/client';
 import useAnalyticsStore from '../store/analyticsStore';
+import useTasksStore from '../store/tasksStore';
 import toast from 'react-hot-toast';
 
 const priorityColor = { high: 'bg-red-500', medium: 'bg-amber-500', low: 'bg-emerald-500' };
@@ -9,21 +10,22 @@ const statusColor = { todo: 'text-slate-500', in_progress: 'text-cyan-500', comp
 const typeBadge = { daily: 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400', timeframe: 'bg-cyan-100 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-400' };
 
 export default function Tasks() {
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const tasks = useTasksStore(s => s.tasks);
+  const loading = useTasksStore(s => s.loading);
   const [view, setView] = useState('list');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: '', task_type: 'daily', priority: 'medium', start_time: '', end_time: '', duration_days: 1 });
 
-  const fetchTasks = () => { client.get('/tasks/today/').then(r => setTasks(r.data.results || r.data || [])).catch(() => toast.error('Failed to load')).finally(() => setLoading(false)); };
-  useEffect(fetchTasks, []);
+  const fetchTasks = useTasksStore(s => s.fetch);
+  useEffect(() => { fetchTasks(); }, []);
 
   const addTask = async (e) => {
     e.preventDefault();
     try {
       await client.post('/tasks/', form);
       toast.success('Task added');
-      useAnalyticsStore.getState().invalidate();
+      useTasksStore.getState().invalidate();
+      fetchTasks();
       setShowForm(false);
       setForm({ title: '', task_type: 'daily', priority: 'medium', start_time: '', end_time: '', duration_days: 1 });
       fetchTasks();
@@ -31,7 +33,7 @@ export default function Tasks() {
   };
 
   const deleteTask = async (id) => { try { await client.delete(`/tasks/${id}/`); setTasks(tasks.filter(t => t.id !== id)); } catch { toast.error('Failed'); } };
-  const resetDay = async () => { try { await client.post('/tasks/reset/'); fetchTasks(); useAnalyticsStore.getState().invalidate(); toast.success('Day reset'); } catch { toast.error('Failed'); } };
+  const resetDay = async () => { try { await client.post('/tasks/reset_today/'); useTasksStore.getState().invalidate(); fetchTasks(); toast.success('Day reset'); } catch { toast.error('Failed'); } };
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
 
