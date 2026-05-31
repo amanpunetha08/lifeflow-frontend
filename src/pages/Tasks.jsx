@@ -19,7 +19,16 @@ export default function Tasks() {
   const addTask = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await client.post('/tasks/', newTask);
+      const payload = { ...newTask };
+      // Build start_time and end_time from time inputs for timeframe tasks
+      if (payload.task_type === 'timeframe' && payload.start_time_input) {
+        const today = new Date().toISOString().split('T')[0];
+        payload.start_time = `${today}T${payload.start_time_input}:00`;
+        if (payload.end_time_input) payload.end_time = `${today}T${payload.end_time_input}:00`;
+      }
+      delete payload.start_time_input;
+      delete payload.end_time_input;
+      const { data } = await client.post('/tasks/', payload);
       setTasks((prev) => [data, ...prev]);
       setShowAdd(false);
       setNewTask({ title: '', priority: 'medium', task_type: 'daily' });
@@ -131,6 +140,16 @@ export default function Tasks() {
 
             {/* Timeframe days */}
             {newTask.task_type === 'timeframe' && (
+              <div>
+                <label className="text-sm text-gray-400 block mb-1">Start Time</label>
+                <input type="time" value={newTask.start_time_input || ''} onChange={(e) => setNewTask({ ...newTask, start_time_input: e.target.value })}
+                  className="w-full bg-[#0f0f1a] border border-[#2a2a3e] rounded-xl px-4 py-3 text-white" />
+              </div>
+              <div>
+                <label className="text-sm text-gray-400 block mb-1">End Time</label>
+                <input type="time" value={newTask.end_time_input || ''} onChange={(e) => setNewTask({ ...newTask, end_time_input: e.target.value })}
+                  className="w-full bg-[#0f0f1a] border border-[#2a2a3e] rounded-xl px-4 py-3 text-white" />
+              </div>
               <div>
                 <label className="text-sm text-gray-400 block mb-1">Duration (days, optional)</label>
                 <input type="number" min="1" value={newTask.timeframe_days || ''} onChange={(e) => setNewTask({ ...newTask, timeframe_days: parseInt(e.target.value) || null })}
