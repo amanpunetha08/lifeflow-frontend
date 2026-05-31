@@ -144,7 +144,7 @@ export default function Tasks() {
             <div key={task.id} className="grid grid-cols-[1fr_100px_120px_100px_80px_60px] gap-4 px-6 py-4 items-center border-b border-[#2a2a3e] last:border-0">
               <span className="text-white text-sm truncate">{task.title}</span>
               <span className={`text-xs px-2 py-0.5 rounded-full w-fit ${priorityClass[task.priority] || ''}`}>{task.priority}</span>
-              <span className="text-xs text-gray-400">{task.start_time || '--'}</span>
+              <span className="text-xs text-gray-400">{task.start_time ? new Date(task.start_time).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true}) : '--'}</span>
               <span className={`text-xs px-2 py-0.5 rounded-full w-fit ${statusClass[task.status] || ''}`}>{task.status}</span>
               <span className="text-xs text-indigo-400">+{task.xp_reward || 10}</span>
               <button onClick={() => deleteTask(task.id)} className="text-gray-500 hover:text-rose-400 text-xs">✕</button>
@@ -184,7 +184,7 @@ export default function Tasks() {
                 <h4 className="text-white font-medium">{task.title}</h4>
                 <span className={`text-xs px-2 py-0.5 rounded-full ${priorityClass[task.priority] || ''}`}>{task.priority}</span>
               </div>
-              <p className="text-xs text-gray-400 mb-3">{task.start_time} - {task.end_time}</p>
+              <p className="text-xs text-gray-400 mb-3">{task.start_time ? new Date(task.start_time).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true}) : ''} - {task.end_time ? new Date(task.end_time).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true}) : ''}</p>
               <div className="flex items-center justify-between">
                 <span className={`text-xs px-2 py-0.5 rounded-full ${statusClass[task.status] || ''}`}>{task.status}</span>
                 <span className="text-xs text-indigo-400">+{task.xp_reward || 10} XP</span>
