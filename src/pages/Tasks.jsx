@@ -9,7 +9,7 @@ const statusColor = { todo: 'text-slate-500', in_progress: 'text-cyan-500', comp
 const typeBadge = { daily: 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400', timeframe: 'bg-cyan-100 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-400' };
 
 export default function Tasks() {
-  const tasks = useTasksStore(s => s.tasks);
+  const tasks = useTasksStore(s => s.data) || [];
   const loading = useTasksStore(s => s.loading);
   const [view, setView] = useState('list');
   const [showForm, setShowForm] = useState(false);

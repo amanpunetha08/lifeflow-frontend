@@ -75,7 +75,7 @@ function StreakHeatmap({ data }) {
 }
 
 export default function Dashboard() {
-  const tasks = useTasksStore(s => s.tasks);
+  const tasks = useTasksStore(s => s.data) || [];
   const fetchTasks = useTasksStore(s => s.fetch);
   const tasksLoading = useTasksStore(s => s.loading);
   const fetchAnalytics = useAnalyticsStore(s => s.fetch);
