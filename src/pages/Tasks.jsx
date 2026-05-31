@@ -13,7 +13,7 @@ export default function Tasks() {
   const [newTask, setNewTask] = useState({ title: '', priority: 'medium', task_type: 'daily' });
 
   useEffect(() => {
-    client.get('/tasks/').then((r) => setTasks(r.data?.results || r.data || [])).catch(() => {});
+    client.get('/tasks/today/').then((r) => setTasks(r.data?.results || r.data || [])).catch(() => {});
   }, []);
 
   const addTask = async (e) => {
