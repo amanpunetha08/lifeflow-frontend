@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { HiOutlineCheckCircle, HiOutlineClock, HiOutlineChartBarSquare, HiOutlineShieldCheck } from 'react-icons/hi2';
-import client from '../api/client';
+import useAnalyticsStore from '../store/analyticsStore';
 import toast from 'react-hot-toast';
 
 export default function Analytics() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => { client.get('/analytics/').then(r => setData(r.data)).catch(() => toast.error('Failed to load')).finally(() => setLoading(false)); }, []);
+  useEffect(() => { useAnalyticsStore.getState().fetch(); }, []);
+  const data = useAnalyticsStore(s => s.data) || {};
+  const loading = useAnalyticsStore(s => s.loading);
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
   if (!data) return <p className="text-center text-slate-400 py-12">No analytics data available yet.</p>;

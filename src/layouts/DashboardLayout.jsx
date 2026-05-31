@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { HiOutlineSquares2X2, HiOutlineClipboardDocumentList, HiOutlineCalendarDays, HiOutlineArrowPath, HiOutlineChartBarSquare, HiOutlineTrophy, HiOutlineCog6Tooth, HiOutlineArrowRightOnRectangle, HiOutlineSun, HiOutlineMoon, HiOutlineBars3 } from 'react-icons/hi2';
+import { HiOutlineSquares2X2, HiOutlineClipboardDocumentList, HiOutlineCalendarDays, HiOutlineArrowPath, HiOutlineChartBarSquare, HiOutlineTrophy, HiOutlineCog6Tooth, HiOutlineArrowRightOnRectangle, HiOutlineSun, HiOutlineMoon, HiOutlineBars3, HiOutlineClock } from 'react-icons/hi2';
 import useAuthStore from '../store/authStore';
 import useThemeStore from '../store/themeStore';
 
@@ -10,6 +10,7 @@ const nav = [
   { to: '/calendar', label: 'Calendar', icon: HiOutlineCalendarDays },
   { to: '/habits', label: 'Habits', icon: HiOutlineArrowPath },
   { to: '/analytics', label: 'Analytics', icon: HiOutlineChartBarSquare },
+  { to: '/focus', label: 'Focus Mode', icon: HiOutlineClock },
   { to: '/achievements', label: 'Achievements', icon: HiOutlineTrophy },
   { to: '/settings', label: 'Settings', icon: HiOutlineCog6Tooth },
 ];

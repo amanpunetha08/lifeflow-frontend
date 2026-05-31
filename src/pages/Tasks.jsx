@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { HiOutlinePlus, HiOutlineTrash, HiOutlineArrowPath } from 'react-icons/hi2';
 import client from '../api/client';
+import useAnalyticsStore from '../store/analyticsStore';
 import toast from 'react-hot-toast';
 
 const priorityColor = { high: 'bg-red-500', medium: 'bg-amber-500', low: 'bg-emerald-500' };
@@ -22,6 +23,7 @@ export default function Tasks() {
     try {
       await client.post('/tasks/', form);
       toast.success('Task added');
+      useAnalyticsStore.getState().invalidate();
       setShowForm(false);
       setForm({ title: '', task_type: 'daily', priority: 'medium', start_time: '', end_time: '', duration_days: 1 });
       fetchTasks();
@@ -29,7 +31,7 @@ export default function Tasks() {
   };
 
   const deleteTask = async (id) => { try { await client.delete(`/tasks/${id}/`); setTasks(tasks.filter(t => t.id !== id)); } catch { toast.error('Failed'); } };
-  const resetDay = async () => { try { await client.post('/tasks/reset/'); fetchTasks(); toast.success('Day reset'); } catch { toast.error('Failed'); } };
+  const resetDay = async () => { try { await client.post('/tasks/reset/'); fetchTasks(); useAnalyticsStore.getState().invalidate(); toast.success('Day reset'); } catch { toast.error('Failed'); } };
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
 
