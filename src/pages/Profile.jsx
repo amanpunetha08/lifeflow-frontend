@@ -19,7 +19,7 @@ export default function Profile() {
         <div className="w-24 h-24 rounded-full bg-indigo-500/20 flex items-center justify-center text-4xl text-indigo-400 font-bold mx-auto">
           {user?.username?.[0]?.toUpperCase() || 'U'}
         </div>
-        <h2 className="text-2xl font-bold text-white mt-4">{user?.username || 'User'}</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mt-4">{user?.username || 'User'}</h2>
         <span className="inline-block mt-2 text-xs bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full">Level {level}</span>
         <div className="max-w-xs mx-auto mt-4">
           <div className="flex justify-between text-xs text-gray-400 mb-1">

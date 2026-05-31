@@ -50,7 +50,7 @@ export default function Login() {
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               placeholder="Enter your email"
-              className="w-full bg-[#0f0f1a] border border-[#2a2a3e] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
               required
             />
           </div>
@@ -60,7 +60,7 @@ export default function Login() {
               type="password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full bg-[#0f0f1a] border border-[#2a2a3e] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
               required
             />
           </div>

@@ -78,7 +78,7 @@ export default function Dashboard() {
               <circle cx="40" cy="40" r="34" fill="none" stroke="#2a2a3e" strokeWidth="6" />
               <circle cx="40" cy="40" r="34" fill="none" stroke="#6366f1" strokeWidth="6" strokeDasharray={`${progress * 2.14} 214`} strokeLinecap="round" />
             </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-white font-bold text-sm">{progress}%</span>
+            <span className="absolute inset-0 flex items-center justify-center text-gray-900 dark:text-white font-bold text-sm">{progress}%</span>
           </div>
         </div>
         <div className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
@@ -99,7 +99,7 @@ export default function Dashboard() {
         <div className="lg:col-span-2 rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Today's Tasks</h3>
-            <button className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-4 py-2 text-sm"><HiPlus className="w-4 h-4" /> Add Task</button>
+            <button className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-gray-900 dark:text-white rounded-xl px-4 py-2 text-sm"><HiPlus className="w-4 h-4" /> Add Task</button>
           </div>
           <div className="flex gap-2 mb-4">
             {['all', 'todo', 'in_progress', 'completed'].map((t) => (
@@ -125,14 +125,14 @@ export default function Dashboard() {
         </div>
 
         <div className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
-          <h3 className="text-lg font-semibold text-white mb-4">{format(currentMonth, 'MMMM yyyy')}</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{format(currentMonth, 'MMMM yyyy')}</h3>
           <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-2">
             {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => <span key={d}>{d}</span>)}
           </div>
           <div className="grid grid-cols-7 gap-1">
             {Array(startDay).fill(null).map((_, i) => <span key={`e${i}`} />)}
             {monthDays.map((day) => (
-              <span key={day.toISOString()} className={`w-8 h-8 flex items-center justify-center rounded-full text-xs ${isToday(day) ? 'bg-indigo-500 text-white' : isSameMonth(day, currentMonth) ? 'text-gray-300 hover:bg-white/5' : 'text-gray-600'}`}>
+              <span key={day.toISOString()} className={`w-8 h-8 flex items-center justify-center rounded-full text-xs ${isToday(day) ? 'bg-indigo-500 text-gray-900 dark:text-white' : isSameMonth(day, currentMonth) ? 'text-gray-300 hover:bg-white/5' : 'text-gray-600'}`}>
                 {format(day, 'd')}
               </span>
             ))}

@@ -19,7 +19,7 @@ export default function Habits() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Habits</h2>
-        <button className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-4 py-2 text-sm"><HiPlus className="w-4 h-4" /> Add Habit</button>
+        <button className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-gray-900 dark:text-white rounded-xl px-4 py-2 text-sm"><HiPlus className="w-4 h-4" /> Add Habit</button>
       </div>
       <div className="text-center text-gray-400 py-20">No habits yet. Create a daily recurring task to track habits!</div>
     </div>
@@ -29,7 +29,7 @@ export default function Habits() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Habits</h2>
-        <button className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-4 py-2 text-sm"><HiPlus className="w-4 h-4" /> Add Habit</button>
+        <button className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-gray-900 dark:text-white rounded-xl px-4 py-2 text-sm"><HiPlus className="w-4 h-4" /> Add Habit</button>
       </div>
 
       <div className="space-y-3">
@@ -54,7 +54,7 @@ export default function Habits() {
                     {dayLabels.map((day, i) => (
                       <div key={day} className="flex flex-col items-center gap-1">
                         <span className="text-[10px] text-gray-500">{day}</span>
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${days[i] ? 'bg-indigo-500 text-white' : 'bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] text-gray-500'}`}>
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${days[i] ? 'bg-indigo-500 text-gray-900 dark:text-white' : 'bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] text-gray-500'}`}>
                           {days[i] ? '✓' : ''}
                         </div>
                       </div>

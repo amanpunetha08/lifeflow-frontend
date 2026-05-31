@@ -33,7 +33,7 @@ export default function Calendar() {
           <button onClick={() => setCurrent(subMonths(current, 1))} className="text-gray-400 hover:text-white p-1"><HiChevronLeft className="w-5 h-5" /></button>
           <span className="text-white font-medium">{format(current, 'MMMM yyyy')}</span>
           <button onClick={() => setCurrent(addMonths(current, 1))} className="text-gray-400 hover:text-white p-1"><HiChevronRight className="w-5 h-5" /></button>
-          <button className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-4 py-2 text-sm">
+          <button className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-gray-900 dark:text-white rounded-xl px-4 py-2 text-sm">
             <HiPlus className="w-4 h-4" /> Add Event
           </button>
         </div>
@@ -58,7 +58,7 @@ export default function Calendar() {
                 <span className={`text-xs ${isToday(day) ? 'text-indigo-400 font-bold' : 'text-gray-400'}`}>{format(day, 'd')}</span>
                 <div className="mt-1 space-y-0.5">
                   {sampleEvents.filter((e) => isSameDay(e.date, day)).map((e) => (
-                    <div key={e.id} className={`${e.color} text-white text-[10px] px-1 py-0.5 rounded truncate`}>{e.title}</div>
+                    <div key={e.id} className={`${e.color} text-gray-900 dark:text-white text-[10px] px-1 py-0.5 rounded truncate`}>{e.title}</div>
                   ))}
                 </div>
               </div>

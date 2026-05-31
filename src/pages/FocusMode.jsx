@@ -53,7 +53,7 @@ export default function FocusMode() {
               strokeLinecap="round" className="transition-all duration-1000" />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-5xl font-bold text-white font-mono">
+            <span className="text-5xl font-bold text-gray-900 dark:text-white font-mono">
               {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
             </span>
             <span className="text-gray-400 text-sm mt-2 capitalize">{mode === 'pomodoro' ? 'Focus Time' : mode.replace('_', ' ')}</span>
@@ -62,7 +62,7 @@ export default function FocusMode() {
 
         <div className="flex gap-3 mt-8">
           <button onClick={toggle}
-            className="bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-8 py-3 font-medium text-lg">
+            className="bg-indigo-500 hover:bg-indigo-600 text-gray-900 dark:text-white rounded-xl px-8 py-3 font-medium text-lg">
             {running ? 'Pause' : 'Start Focus'}
           </button>
           <button onClick={reset} className="border border-slate-200 dark:border-[#2a2a3e] text-gray-400 hover:text-white rounded-xl px-6 py-3">Reset</button>
@@ -73,11 +73,11 @@ export default function FocusMode() {
       <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
         <div className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e] text-center">
           <p className="text-gray-400 text-sm">Today's Focus</p>
-          <p className="text-2xl font-bold text-white mt-1">{sessions.length} sessions</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{sessions.length} sessions</p>
         </div>
         <div className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e] text-center">
           <p className="text-gray-400 text-sm">Total Focus</p>
-          <p className="text-2xl font-bold text-white mt-1">{sessions.length * 25}m</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{sessions.length * 25}m</p>
         </div>
       </div>
 

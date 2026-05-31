@@ -47,7 +47,7 @@ export default function Register() {
               type="text"
               value={form.username}
               onChange={(e) => setForm({ ...form, username: e.target.value })}
-              className="w-full bg-[#0f0f1a] border border-[#2a2a3e] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
               required
             />
           </div>
@@ -57,7 +57,7 @@ export default function Register() {
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full bg-[#0f0f1a] border border-[#2a2a3e] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
               required
             />
           </div>
@@ -67,7 +67,7 @@ export default function Register() {
               type="password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full bg-[#0f0f1a] border border-[#2a2a3e] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
               required
             />
           </div>
@@ -77,7 +77,7 @@ export default function Register() {
               type="password"
               value={form.password2}
               onChange={(e) => setForm({ ...form, password2: e.target.value })}
-              className="w-full bg-[#0f0f1a] border border-[#2a2a3e] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
               required
             />
           </div>

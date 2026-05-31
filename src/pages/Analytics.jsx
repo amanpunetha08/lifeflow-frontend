@@ -36,7 +36,7 @@ export default function Analytics() {
         {statCards.map((s) => (
           <div key={s.label} className="rounded-2xl p-6 bg-slate-50 dark:bg-[#1a1a2e] border border-slate-200 dark:border-[#2a2a3e]">
             <p className="text-gray-400 text-sm">{s.label}</p>
-            <p className="text-2xl font-bold text-white mt-1">{s.value}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{s.value}</p>
             {s.change != null && <p className={`text-sm mt-1 ${s.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>{s.change >= 0 ? '+' : ''}{s.change}% from last week</p>}
           </div>
         ))}

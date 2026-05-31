@@ -73,7 +73,7 @@ export default function Tasks() {
           <button className="flex items-center gap-1 border border-slate-200 dark:border-[#2a2a3e] text-gray-400 rounded-xl px-4 py-2 text-sm hover:text-gray-900 dark:text-white">
             <HiFunnel className="w-4 h-4" /> Filter
           </button>
-          <button onClick={() => setShowAdd(true)} className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-4 py-2 text-sm">
+          <button onClick={() => setShowAdd(true)} className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-gray-900 dark:text-white rounded-xl px-4 py-2 text-sm">
             <HiPlus className="w-4 h-4" /> Add Task
           </button>
         </div>
@@ -158,7 +158,7 @@ export default function Tasks() {
             </>)}
 
             <div className="flex gap-3">
-              <button type="submit" className="bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-6 py-3 text-sm font-medium">Create Task</button>
+              <button type="submit" className="bg-indigo-500 hover:bg-indigo-600 text-gray-900 dark:text-white rounded-xl px-6 py-3 text-sm font-medium">Create Task</button>
               <button type="button" onClick={() => setShowAdd(false)} className="text-gray-400 hover:text-white px-4 py-3 text-sm">Cancel</button>
             </div>
           </form>
@@ -194,7 +194,7 @@ export default function Tasks() {
               <div className="space-y-2">
                 {tasks.filter((t) => t.status === col).map((task) => (
                   <div key={task.id} className="p-3 rounded-xl bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e]">
-                    <p className="text-sm text-white mb-2">{task.title}</p>
+                    <p className="text-sm text-gray-900 dark:text-white mb-2">{task.title}</p>
                     <div className="flex items-center justify-between">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${priorityClass[task.priority] || ''}`}>{task.priority}</span>
                       <span className="text-xs text-indigo-400">+{task.xp_reward || 10} XP</span>

@@ -53,7 +53,7 @@ export default function Settings() {
             <p className="text-sm text-gray-500 dark:text-gray-400">Your data is stored securely and never shared with third parties.</p>
           </div>
           <button onClick={() => toast.success('Settings saved!')}
-            className="bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-6 py-3">
+            className="bg-indigo-500 hover:bg-indigo-600 text-gray-900 dark:text-white rounded-xl px-6 py-3">
             Save Changes
           </button>
         </div>
@@ -67,9 +67,9 @@ export default function Settings() {
           </div>
           <div>
             <label className="text-sm text-gray-400 block mb-1">Bio</label>
-            <textarea className="w-full bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-white h-24 resize-none" placeholder="Tell us about yourself" />
+            <textarea className="w-full bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-gray-900 dark:text-white h-24 resize-none" placeholder="Tell us about yourself" />
           </div>
-          <button className="bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-6 py-3">Update Profile</button>
+          <button className="bg-indigo-500 hover:bg-indigo-600 text-gray-900 dark:text-white rounded-xl px-6 py-3">Update Profile</button>
         </div>
       )}
 
@@ -79,7 +79,7 @@ export default function Settings() {
             <label className="text-sm text-gray-400 block mb-1">Email</label>
             <input className="w-full bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-gray-900 dark:text-white" placeholder="email@example.com" />
           </div>
-          <button className="bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-6 py-3">Update Email</button>
+          <button className="bg-indigo-500 hover:bg-indigo-600 text-gray-900 dark:text-white rounded-xl px-6 py-3">Update Email</button>
           <div className="pt-4 border-t border-slate-200 dark:border-[#2a2a3e]">
             <button className="text-rose-400 hover:text-rose-300 text-sm">Delete Account</button>
           </div>
@@ -96,7 +96,7 @@ export default function Settings() {
             <label className="text-sm text-gray-400 block mb-1">New Password</label>
             <input type="password" className="w-full bg-slate-100 dark:bg-[#0f0f1a] border border-slate-200 dark:border-[#2a2a3e] rounded-xl px-4 py-3 text-gray-900 dark:text-white" />
           </div>
-          <button className="bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-6 py-3">Change Password</button>
+          <button className="bg-indigo-500 hover:bg-indigo-600 text-gray-900 dark:text-white rounded-xl px-6 py-3">Change Password</button>
         </div>
       )}
     </div>
