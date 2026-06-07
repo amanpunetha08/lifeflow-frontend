@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { HiOutlinePlus, HiOutlineTrash, HiOutlineArrowPath } from 'react-icons/hi2';
+import { HiOutlinePlus, HiOutlineTrash, HiOutlineArrowPath, HiOutlinePencilSquare, HiOutlineCheckCircle } from 'react-icons/hi2';
 import client from '../api/client';
 import { useTasksStore } from '../store/dataStore';
 import toast from 'react-hot-toast';
@@ -13,6 +13,8 @@ export default function Tasks() {
   const loading = useTasksStore(s => s.loading);
   const [view, setView] = useState('list');
   const [showForm, setShowForm] = useState(false);
+  const [expandedTask, setExpandedTask] = useState(null);
+  const [noteText, setNoteText] = useState('');
   const [form, setForm] = useState({ title: '', task_type: 'daily', priority: 'medium', start_time: '', end_time: '', duration_days: 1 });
 
   const fetchTasks = useTasksStore(s => s.fetch);
@@ -31,8 +33,31 @@ export default function Tasks() {
     } catch { toast.error('Failed to add task'); }
   };
 
-  const deleteTask = async (id) => { try { await client.delete(`/tasks/${id}/`); setTasks(tasks.filter(t => t.id !== id)); } catch { toast.error('Failed'); } };
+  const deleteTask = async (id) => { try { await client.delete(`/tasks/${id}/`); useTasksStore.getState().invalidate(); fetchTasks(); } catch { toast.error('Failed'); } };
   const resetDay = async () => { try { await client.post('/tasks/reset_today/'); useTasksStore.getState().invalidate(); fetchTasks(); toast.success('Day reset'); } catch { toast.error('Failed'); } };
+
+  const completeTask = async (id) => {
+    try {
+      await client.post(`/tasks/${id}/complete/`);
+      useTasksStore.getState().invalidate();
+      fetchTasks();
+      toast.success('Task completed! 🎉');
+    } catch { toast.error('Failed'); }
+  };
+
+  const toggleNotes = (task) => {
+    if (expandedTask === task.id) { setExpandedTask(null); }
+    else { setExpandedTask(task.id); setNoteText(task.notes || ''); }
+  };
+
+  const saveNotes = async (id) => {
+    try {
+      await client.patch(`/tasks/${id}/`, { notes: noteText });
+      useTasksStore.getState().invalidate();
+      fetchTasks();
+      toast.success('Notes saved');
+    } catch { toast.error('Failed to save notes'); }
+  };
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
 
@@ -70,13 +95,29 @@ export default function Tasks() {
       {view === 'list' && (
         <div className="bg-white dark:bg-[#1E293B] rounded-2xl border border-slate-100 dark:border-[#475569] shadow-sm dark:shadow-none overflow-hidden">
           {tasks.length === 0 ? <p className="text-sm text-slate-400 py-12 text-center">No tasks yet</p> : tasks.map(task => (
-            <div key={task.id} className="flex items-center gap-3 px-5 py-3 border-b border-slate-100 dark:border-[#475569] last:border-0 hover:bg-slate-50 dark:hover:bg-[#334155] transition-colors">
-              <div className={`w-2 h-2 rounded-full ${priorityColor[task.priority] || 'bg-slate-400'}`} />
-              <span className="flex-1 text-sm text-slate-800 dark:text-slate-200">{task.title}</span>
-              <span className={`text-xs px-2 py-0.5 rounded-lg ${typeBadge[task.task_type] || typeBadge.daily}`}>{task.task_type}</span>
-              <span className={`text-xs font-medium ${statusColor[task.status]}`}>{task.status?.replace('_', ' ')}</span>
-              {task.xp && <span className="text-xs text-emerald-500">+{task.xp}xp</span>}
-              <button onClick={() => deleteTask(task.id)} className="text-slate-400 hover:text-red-500 transition-colors"><HiOutlineTrash className="w-4 h-4" /></button>
+            <div key={task.id} className="border-b border-slate-100 dark:border-[#475569] last:border-0">
+              <div className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 dark:hover:bg-[#334155] transition-colors">
+                <div className={`w-2 h-2 rounded-full ${priorityColor[task.priority] || 'bg-slate-400'}`} />
+                <span className={`flex-1 text-sm ${task.status === 'completed' ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-200'}`}>{task.title}</span>
+                <span className={`text-xs px-2 py-0.5 rounded-lg ${typeBadge[task.task_type] || typeBadge.daily}`}>{task.task_type}</span>
+                <span className={`text-xs font-medium ${statusColor[task.status]}`}>{task.status?.replace('_', ' ')}</span>
+                {task.xp_reward && <span className="text-xs text-emerald-500">+{task.xp_reward}xp</span>}
+                <button onClick={() => toggleNotes(task)} className="text-slate-400 hover:text-indigo-500 transition-colors" title="Log notes"><HiOutlinePencilSquare className="w-4 h-4" /></button>
+                {task.status !== 'completed' && <button onClick={() => completeTask(task.id)} className="text-slate-400 hover:text-emerald-500 transition-colors" title="Complete"><HiOutlineCheckCircle className="w-4 h-4" /></button>}
+                <button onClick={() => deleteTask(task.id)} className="text-slate-400 hover:text-red-500 transition-colors"><HiOutlineTrash className="w-4 h-4" /></button>
+              </div>
+              {expandedTask === task.id && (
+                <div className="px-5 pb-4 pt-1">
+                  <textarea
+                    value={noteText}
+                    onChange={e => setNoteText(e.target.value)}
+                    rows={4}
+                    placeholder="TRAP Log:&#10;• Topic:&#10;• Approach:&#10;• Pattern:&#10;• Review needed: Y/N"
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#475569] bg-slate-50 dark:bg-[#0B1220] text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                  />
+                  <button onClick={() => saveNotes(task.id)} className="mt-2 px-3 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">Save Notes</button>
+                </div>
+              )}
             </div>
           ))}
         </div>
