@@ -15,7 +15,33 @@ export default function Tasks() {
   const [showForm, setShowForm] = useState(false);
   const [expandedTask, setExpandedTask] = useState(null);
   const [noteText, setNoteText] = useState('');
+  const [dayOffset, setDayOffset] = useState(0);
+  const [dayTasks, setDayTasks] = useState(null);
+  const [dayLoading, setDayLoading] = useState(false);
   const [form, setForm] = useState({ title: '', task_type: 'daily', priority: 'medium', start_time: '', end_time: '', duration_days: 1 });
+
+  const fetchTasks = useTasksStore(s => s.fetch);
+  useEffect(() => { fetchTasks(); }, []);
+
+  // Fetch tasks for a specific day offset
+  useEffect(() => {
+    if (dayOffset === 0) { setDayTasks(null); return; }
+    const fetchDay = async () => {
+      setDayLoading(true);
+      const d = new Date(); d.setDate(d.getDate() + dayOffset);
+      const dateStr = d.toISOString().split('T')[0];
+      try {
+        const { data } = await client.get(`/tasks/today/?date=${dateStr}`);
+        setDayTasks(data.results !== undefined ? data.results : data);
+      } catch { setDayTasks([]); }
+      setDayLoading(false);
+    };
+    fetchDay();
+  }, [dayOffset]);
+
+  const activeTasks = dayOffset === 0 ? tasks : (dayTasks || []);
+  const isLoading = dayOffset === 0 ? loading : dayLoading;
+  const dayLabel = dayOffset === 0 ? 'Today' : dayOffset === 1 ? 'Tomorrow' : `+${dayOffset} days`;
 
   const fetchTasks = useTasksStore(s => s.fetch);
   useEffect(() => { fetchTasks(); }, []);
@@ -59,13 +85,16 @@ export default function Tasks() {
     } catch { toast.error('Failed to save notes'); }
   };
 
-  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (isLoading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
 
-  const grouped = { todo: tasks.filter(t => t.status === 'todo'), in_progress: tasks.filter(t => t.status === 'in_progress'), completed: tasks.filter(t => t.status === 'completed') };
+  const grouped = { todo: activeTasks.filter(t => t.status === 'todo'), in_progress: activeTasks.filter(t => t.status === 'in_progress'), completed: activeTasks.filter(t => t.status === 'completed') };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
+        <div className="flex gap-1 bg-white dark:bg-[#1E293B] rounded-xl p-1 border border-slate-200 dark:border-[#475569]">
+          {[['Today', 0], ['Tomorrow', 1]].map(([label, offset]) => <button key={offset} onClick={() => setDayOffset(offset)} className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${dayOffset === offset ? 'bg-emerald-600 text-white' : 'text-slate-600 dark:text-slate-400'}`}>{label}</button>)}
+        </div>
         <div className="flex gap-1 bg-white dark:bg-[#1E293B] rounded-xl p-1 border border-slate-200 dark:border-[#475569]">
           {['list', 'board', 'card'].map(v => <button key={v} onClick={() => setView(v)} className={`px-3 py-1.5 text-sm rounded-lg capitalize transition-colors ${view === v ? 'bg-emerald-600 text-white' : 'text-slate-600 dark:text-slate-400'}`}>{v}</button>)}
         </div>
@@ -94,7 +123,7 @@ export default function Tasks() {
 
       {view === 'list' && (
         <div className="bg-white dark:bg-[#1E293B] rounded-2xl border border-slate-100 dark:border-[#475569] shadow-sm dark:shadow-none overflow-hidden">
-          {tasks.length === 0 ? <p className="text-sm text-slate-400 py-12 text-center">No tasks yet</p> : tasks.map(task => (
+          {activeTasks.length === 0 ? <p className="text-sm text-slate-400 py-12 text-center">No tasks for {dayLabel}</p> : activeTasks.map(task => (
             <div key={task.id} className="border-b border-slate-100 dark:border-[#475569] last:border-0">
               <div className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 dark:hover:bg-[#334155] transition-colors">
                 <div className={`w-2 h-2 rounded-full ${priorityColor[task.priority] || 'bg-slate-400'}`} />
@@ -142,7 +171,7 @@ export default function Tasks() {
 
       {view === 'card' && (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tasks.map(task => (
+          {activeTasks.map(task => (
             <div key={task.id} className="p-4 bg-white dark:bg-[#1E293B] rounded-2xl border border-slate-100 dark:border-[#475569] shadow-sm dark:shadow-none">
               <div className="flex items-center justify-between mb-2">
                 <span className={`text-xs px-2 py-0.5 rounded-lg ${typeBadge[task.task_type] || typeBadge.daily}`}>{task.task_type}</span>
