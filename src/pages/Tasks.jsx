@@ -43,9 +43,6 @@ export default function Tasks() {
   const isLoading = dayOffset === 0 ? loading : dayLoading;
   const dayLabel = dayOffset === 0 ? 'Today' : dayOffset === 1 ? 'Tomorrow' : `+${dayOffset} days`;
 
-  const fetchTasks = useTasksStore(s => s.fetch);
-  useEffect(() => { fetchTasks(); }, []);
-
   const addTask = async (e) => {
     e.preventDefault();
     try {
