@@ -1,63 +1,26 @@
 import { useEffect, useState } from 'react';
-import { HiOutlinePlus, HiOutlineTrash, HiOutlineArrowPath, HiOutlinePencilSquare, HiOutlineCheckCircle } from 'react-icons/hi2';
+import { HiOutlinePlus, HiOutlineTrash, HiOutlineArrowPath, HiOutlineCheckCircle, HiOutlineChevronDown, HiOutlineChevronUp } from 'react-icons/hi2';
 import client from '../api/client';
 import { useTasksStore } from '../store/dataStore';
 import toast from 'react-hot-toast';
 
-const priorityColor = { high: 'bg-red-500', medium: 'bg-amber-500', low: 'bg-emerald-500' };
-const statusColor = { todo: 'text-slate-500', in_progress: 'text-cyan-500', completed: 'text-emerald-500', missed: 'text-red-500' };
-const typeBadge = { daily: 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400', timeframe: 'bg-cyan-100 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-400' };
+const statusStyles = {
+  completed: 'bg-emerald-50 dark:bg-emerald-500/5 border-emerald-200 dark:border-emerald-800',
+  todo: 'bg-white dark:bg-[#1E293B] border-slate-200 dark:border-[#475569]',
+  in_progress: 'bg-cyan-50 dark:bg-cyan-500/5 border-cyan-200 dark:border-cyan-800',
+  missed: 'bg-red-50 dark:bg-red-500/5 border-red-200 dark:border-red-800',
+};
 
 export default function Tasks() {
   const tasks = useTasksStore(s => s.data) || [];
   const loading = useTasksStore(s => s.loading);
-  const [view, setView] = useState('list');
-  const [showForm, setShowForm] = useState(false);
   const [expandedTask, setExpandedTask] = useState(null);
   const [noteText, setNoteText] = useState('');
-  const [dayOffset, setDayOffset] = useState(0);
-  const [dayTasks, setDayTasks] = useState(null);
-  const [dayLoading, setDayLoading] = useState(false);
-  const [form, setForm] = useState({ title: '', task_type: 'daily', priority: 'medium', start_time: '', end_time: '', duration_days: 1 });
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ title: '', task_type: 'daily', priority: 'medium' });
 
   const fetchTasks = useTasksStore(s => s.fetch);
   useEffect(() => { fetchTasks(); }, []);
-
-  // Fetch tasks for a specific day offset
-  useEffect(() => {
-    if (dayOffset === 0) { setDayTasks(null); return; }
-    const fetchDay = async () => {
-      setDayLoading(true);
-      const d = new Date(); d.setDate(d.getDate() + dayOffset);
-      const dateStr = d.toISOString().split('T')[0];
-      try {
-        const { data } = await client.get(`/tasks/today/?date=${dateStr}`);
-        setDayTasks(data.results !== undefined ? data.results : data);
-      } catch { setDayTasks([]); }
-      setDayLoading(false);
-    };
-    fetchDay();
-  }, [dayOffset]);
-
-  const activeTasks = dayOffset === 0 ? tasks : (dayTasks || []);
-  const isLoading = dayOffset === 0 ? loading : dayLoading;
-  const dayLabel = dayOffset === 0 ? 'Today' : dayOffset === 1 ? 'Tomorrow' : `+${dayOffset} days`;
-
-  const addTask = async (e) => {
-    e.preventDefault();
-    try {
-      await client.post('/tasks/', form);
-      toast.success('Task added');
-      useTasksStore.getState().invalidate();
-      fetchTasks();
-      setShowForm(false);
-      setForm({ title: '', task_type: 'daily', priority: 'medium', start_time: '', end_time: '', duration_days: 1 });
-      fetchTasks();
-    } catch { toast.error('Failed to add task'); }
-  };
-
-  const deleteTask = async (id) => { try { await client.delete(`/tasks/${id}/`); useTasksStore.getState().invalidate(); fetchTasks(); } catch { toast.error('Failed'); } };
-  const resetDay = async () => { try { await client.post('/tasks/reset_today/'); useTasksStore.getState().invalidate(); fetchTasks(); toast.success('Day reset'); } catch { toast.error('Failed'); } };
 
   const completeTask = async (id) => {
     try {
@@ -66,6 +29,16 @@ export default function Tasks() {
       fetchTasks();
       toast.success('Task completed! 🎉');
     } catch { toast.error('Failed'); }
+  };
+
+  const deleteTask = async (id) => {
+    try { await client.delete(`/tasks/${id}/`); useTasksStore.getState().invalidate(); fetchTasks(); }
+    catch { toast.error('Failed'); }
+  };
+
+  const resetDay = async () => {
+    try { await client.post('/tasks/reset_today/'); useTasksStore.getState().invalidate(); fetchTasks(); toast.success('Day reset'); }
+    catch { toast.error('Failed'); }
   };
 
   const toggleNotes = (task) => {
@@ -79,108 +52,109 @@ export default function Tasks() {
       useTasksStore.getState().invalidate();
       fetchTasks();
       toast.success('Notes saved');
-    } catch { toast.error('Failed to save notes'); }
+      setExpandedTask(null);
+    } catch { toast.error('Failed to save'); }
   };
 
-  if (isLoading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
+  const addTask = async (e) => {
+    e.preventDefault();
+    try {
+      await client.post('/tasks/', form);
+      toast.success('Task added');
+      useTasksStore.getState().invalidate();
+      fetchTasks();
+      setShowForm(false);
+      setForm({ title: '', task_type: 'daily', priority: 'medium' });
+    } catch { toast.error('Failed'); }
+  };
 
-  const grouped = { todo: activeTasks.filter(t => t.status === 'todo'), in_progress: activeTasks.filter(t => t.status === 'in_progress'), completed: activeTasks.filter(t => t.status === 'completed') };
+  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
+
+  const pending = tasks.filter(t => t.status !== 'completed');
+  const completed = tasks.filter(t => t.status === 'completed');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex gap-1 bg-white dark:bg-[#1E293B] rounded-xl p-1 border border-slate-200 dark:border-[#475569]">
-          {[['Today', 0], ['Tomorrow', 1]].map(([label, offset]) => <button key={offset} onClick={() => setDayOffset(offset)} className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${dayOffset === offset ? 'bg-emerald-600 text-white' : 'text-slate-600 dark:text-slate-400'}`}>{label}</button>)}
-        </div>
-        <div className="flex gap-1 bg-white dark:bg-[#1E293B] rounded-xl p-1 border border-slate-200 dark:border-[#475569]">
-          {['list', 'board', 'card'].map(v => <button key={v} onClick={() => setView(v)} className={`px-3 py-1.5 text-sm rounded-lg capitalize transition-colors ${view === v ? 'bg-emerald-600 text-white' : 'text-slate-600 dark:text-slate-400'}`}>{v}</button>)}
-        </div>
+        <h1 className="text-lg font-bold text-slate-900 dark:text-slate-50">Today ({pending.length} remaining)</h1>
         <div className="flex gap-2">
-          <button onClick={resetDay} className="flex items-center gap-1 px-3 py-2 text-sm border border-slate-200 dark:border-[#475569] rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#334155] transition-colors"><HiOutlineArrowPath className="w-4 h-4" />Reset</button>
-          <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-1 px-3 py-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-colors"><HiOutlinePlus className="w-4 h-4" />Add Task</button>
+          <button onClick={resetDay} className="p-2.5 border border-slate-200 dark:border-[#475569] rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-[#334155]"><HiOutlineArrowPath className="w-4 h-4" /></button>
+          <button onClick={() => setShowForm(!showForm)} className="p-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl"><HiOutlinePlus className="w-4 h-4" /></button>
         </div>
       </div>
 
+      {/* Quick add */}
       {showForm && (
-        <form onSubmit={addTask} className="p-5 bg-white dark:bg-[#1E293B] rounded-2xl border border-slate-200 dark:border-[#475569] shadow-sm dark:shadow-none space-y-4">
-          <input type="text" required placeholder="Task title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#475569] bg-white dark:bg-[#0B1220] text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <select value={form.task_type} onChange={e => setForm({ ...form, task_type: e.target.value })} className="px-3 py-2 rounded-xl border border-slate-200 dark:border-[#475569] bg-white dark:bg-[#0B1220] text-sm text-slate-700 dark:text-slate-300">
-              <option value="daily">Daily</option><option value="timeframe">Timeframe</option>
-            </select>
-            <select value={form.priority} onChange={e => setForm({ ...form, priority: e.target.value })} className="px-3 py-2 rounded-xl border border-slate-200 dark:border-[#475569] bg-white dark:bg-[#0B1220] text-sm text-slate-700 dark:text-slate-300">
-              <option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option>
-            </select>
-            <input type="time" value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} className="px-3 py-2 rounded-xl border border-slate-200 dark:border-[#475569] bg-white dark:bg-[#0B1220] text-sm text-slate-700 dark:text-slate-300" />
-            <input type="time" value={form.end_time} onChange={e => setForm({ ...form, end_time: e.target.value })} className="px-3 py-2 rounded-xl border border-slate-200 dark:border-[#475569] bg-white dark:bg-[#0B1220] text-sm text-slate-700 dark:text-slate-300" />
-          </div>
-          <button type="submit" className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded-xl transition-colors">Save Task</button>
+        <form onSubmit={addTask} className="flex gap-2">
+          <input type="text" required placeholder="Task title..." value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#475569] bg-white dark:bg-[#0B1220] text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm" />
+          <button type="submit" className="px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium">Add</button>
         </form>
       )}
 
-      {view === 'list' && (
-        <div className="bg-white dark:bg-[#1E293B] rounded-2xl border border-slate-100 dark:border-[#475569] shadow-sm dark:shadow-none overflow-hidden">
-          {activeTasks.length === 0 ? <p className="text-sm text-slate-400 py-12 text-center">No tasks for {dayLabel}</p> : activeTasks.map(task => (
-            <div key={task.id} className="border-b border-slate-100 dark:border-[#475569] last:border-0">
-              <div className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 dark:hover:bg-[#334155] transition-colors">
-                <div className={`w-2 h-2 rounded-full ${priorityColor[task.priority] || 'bg-slate-400'}`} />
-                <span className={`flex-1 text-sm ${task.status === 'completed' ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-200'}`}>{task.title}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-lg ${typeBadge[task.task_type] || typeBadge.daily}`}>{task.task_type}</span>
-                <span className={`text-xs font-medium ${statusColor[task.status]}`}>{task.status?.replace('_', ' ')}</span>
-                {task.xp_reward && <span className="text-xs text-emerald-500">+{task.xp_reward}xp</span>}
-                <button onClick={() => toggleNotes(task)} className="text-slate-400 hover:text-indigo-500 transition-colors" title="Log notes"><HiOutlinePencilSquare className="w-4 h-4" /></button>
-                {task.status !== 'completed' && <button onClick={() => completeTask(task.id)} className="text-slate-400 hover:text-emerald-500 transition-colors" title="Complete"><HiOutlineCheckCircle className="w-4 h-4" /></button>}
-                <button onClick={() => deleteTask(task.id)} className="text-slate-400 hover:text-red-500 transition-colors"><HiOutlineTrash className="w-4 h-4" /></button>
+      {/* Pending tasks */}
+      <div className="space-y-2">
+        {pending.length === 0 && <p className="text-center text-slate-400 py-12 text-sm">All done for today! 🎉</p>}
+        {pending.map(task => (
+          <div key={task.id} className={`rounded-2xl border p-4 transition-all ${statusStyles[task.status]}`}>
+            <div className="flex items-center gap-3">
+              {/* Big complete button */}
+              <button onClick={() => completeTask(task.id)}
+                className="w-11 h-11 flex-shrink-0 rounded-full border-2 border-emerald-400 hover:bg-emerald-500 hover:border-emerald-500 flex items-center justify-center transition-all group">
+                <HiOutlineCheckCircle className="w-6 h-6 text-emerald-400 group-hover:text-white" />
+              </button>
+
+              {/* Task info — tap to expand notes */}
+              <div className="flex-1 min-w-0 cursor-pointer" onClick={() => toggleNotes(task)}>
+                <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{task.title}</p>
+                {task.notes && !expandedTask && <p className="text-xs text-slate-400 mt-0.5 truncate">📝 {task.notes.split('\n')[0]}</p>}
               </div>
-              {expandedTask === task.id && (
-                <div className="px-5 pb-4 pt-1">
-                  <textarea
-                    value={noteText}
-                    onChange={e => setNoteText(e.target.value)}
-                    rows={4}
-                    placeholder="TRAP Log:&#10;• Topic:&#10;• Approach:&#10;• Pattern:&#10;• Review needed: Y/N"
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#475569] bg-slate-50 dark:bg-[#0B1220] text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
-                  />
-                  <button onClick={() => saveNotes(task.id)} className="mt-2 px-3 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">Save Notes</button>
+
+              {/* XP */}
+              <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-lg flex-shrink-0">+{task.xp_reward}</span>
+
+              {/* Expand arrow */}
+              <button onClick={() => toggleNotes(task)} className="p-1.5 text-slate-400">
+                {expandedTask === task.id ? <HiOutlineChevronUp className="w-4 h-4" /> : <HiOutlineChevronDown className="w-4 h-4" />}
+              </button>
+            </div>
+
+            {/* Expanded notes */}
+            {expandedTask === task.id && (
+              <div className="mt-3 pt-3 border-t border-slate-100 dark:border-[#475569]">
+                <textarea
+                  value={noteText}
+                  onChange={e => setNoteText(e.target.value)}
+                  rows={5}
+                  placeholder="Write your notes here..."
+                  className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-[#475569] bg-slate-50 dark:bg-[#0B1220] text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono leading-relaxed"
+                />
+                <div className="flex gap-2 mt-2">
+                  <button onClick={() => saveNotes(task.id)} className="px-4 py-2 text-xs bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium">Save Notes</button>
+                  <button onClick={() => { saveNotes(task.id); setTimeout(() => completeTask(task.id), 300); }} className="px-4 py-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium">Save & Complete ✓</button>
+                  <button onClick={() => deleteTask(task.id)} className="ml-auto px-3 py-2 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg"><HiOutlineTrash className="w-3.5 h-3.5" /></button>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
 
-      {view === 'board' && (
-        <div className="grid md:grid-cols-3 gap-4">
-          {Object.entries(grouped).map(([status, items]) => (
-            <div key={status} className="bg-white dark:bg-[#1E293B] rounded-2xl border border-slate-100 dark:border-[#475569] shadow-sm dark:shadow-none p-4">
-              <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 capitalize">{status.replace('_', ' ')} ({items.length})</h4>
-              <div className="space-y-2">
-                {items.map(task => (
-                  <div key={task.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#0B1220] border border-slate-100 dark:border-[#475569]">
-                    <div className="flex items-center gap-2"><div className={`w-2 h-2 rounded-full ${priorityColor[task.priority] || 'bg-slate-400'}`} /><span className="text-sm text-slate-800 dark:text-slate-200">{task.title}</span></div>
-                  </div>
-                ))}
+      {/* Completed section */}
+      {completed.length > 0 && (
+        <div className="pt-4">
+          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Completed ({completed.length})</h3>
+          <div className="space-y-1">
+            {completed.map(task => (
+              <div key={task.id} className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-500/5 border border-emerald-100 dark:border-emerald-900/30">
+                <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                  <HiOutlineCheckCircle className="w-3.5 h-3.5 text-white" />
+                </div>
+                <span className="text-sm text-slate-400 line-through flex-1 truncate">{task.title}</span>
+                <span className="text-xs text-emerald-500 font-medium">+{task.xp_reward}xp</span>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {view === 'card' && (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {activeTasks.map(task => (
-            <div key={task.id} className="p-4 bg-white dark:bg-[#1E293B] rounded-2xl border border-slate-100 dark:border-[#475569] shadow-sm dark:shadow-none">
-              <div className="flex items-center justify-between mb-2">
-                <span className={`text-xs px-2 py-0.5 rounded-lg ${typeBadge[task.task_type] || typeBadge.daily}`}>{task.task_type}</span>
-                <div className={`w-2 h-2 rounded-full ${priorityColor[task.priority] || 'bg-slate-400'}`} />
-              </div>
-              <h4 className="text-sm font-medium text-slate-800 dark:text-slate-200 mb-2">{task.title}</h4>
-              <div className="flex items-center justify-between">
-                <span className={`text-xs ${statusColor[task.status]}`}>{task.status?.replace('_', ' ')}</span>
-                {task.xp && <span className="text-xs text-emerald-500">+{task.xp}xp</span>}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
     </div>
