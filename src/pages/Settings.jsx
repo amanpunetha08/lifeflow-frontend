@@ -93,9 +93,9 @@ export default function Settings() {
 
       <div className="bg-white dark:bg-[#1E293B] rounded-2xl shadow-sm dark:shadow-none border border-slate-100 dark:border-[#475569] p-6">
         <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4">2-Week Growth Plan</h3>
-        <p className="text-xs text-slate-400 mb-4">Generate a 14-day plan with DSA, System Design, Finance, and Home Workout tasks starting tomorrow. Includes TRAP methodology notes templates.</p>
+        <p className="text-xs text-slate-400 mb-4">Generate (or reset) your 12-day plan with DSA, System Design, Workout, and Finance tasks starting tomorrow. Times are locked in task titles.</p>
         <button onClick={seedPlan} disabled={seeding} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl font-medium transition-colors">
-          {seeding ? 'Generating...' : '🚀 Generate 2-Week Plan'}
+          {seeding ? 'Generating...' : '🚀 Reset & Generate Plan'}
         </button>
       </div>
 
