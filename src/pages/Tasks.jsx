@@ -18,9 +18,34 @@ export default function Tasks() {
   const [noteText, setNoteText] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: '', task_type: 'daily', priority: 'medium' });
+  const [dayOffset, setDayOffset] = useState(0);
+  const [dayTasks, setDayTasks] = useState(null);
+  const [dayLoading, setDayLoading] = useState(false);
 
   const fetchTasks = useTasksStore(s => s.fetch);
   useEffect(() => { fetchTasks(); }, []);
+
+  // Fetch other day's tasks when offset changes
+  useEffect(() => {
+    if (dayOffset === 0) { setDayTasks(null); return; }
+    setDayLoading(true);
+    const d = new Date();
+    d.setDate(d.getDate() + dayOffset);
+    const dateStr = d.toISOString().split('T')[0];
+    client.get(`/tasks/?start_time__date=${dateStr}`).then(({ data }) => {
+      setDayTasks(data.results !== undefined ? data.results : data);
+      setDayLoading(false);
+    }).catch(() => setDayLoading(false));
+  }, [dayOffset]);
+
+  const displayTasks = dayOffset === 0 ? tasks : (dayTasks || []);
+  const dateLabel = () => {
+    if (dayOffset === 0) return 'Today';
+    if (dayOffset === 1) return 'Tomorrow';
+    if (dayOffset === -1) return 'Yesterday';
+    const d = new Date(); d.setDate(d.getDate() + dayOffset);
+    return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+  };
 
   const completeTask = async (id) => {
     try {
@@ -68,16 +93,21 @@ export default function Tasks() {
     } catch { toast.error('Failed'); }
   };
 
-  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading || dayLoading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
 
-  const pending = tasks.filter(t => t.status !== 'completed');
-  const completed = tasks.filter(t => t.status === 'completed');
+  const pending = displayTasks.filter(t => t.status !== 'completed');
+  const completed = displayTasks.filter(t => t.status === 'completed');
 
   return (
     <div className="space-y-4">
-      {/* Header */}
+      {/* Header with date nav */}
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-bold text-slate-900 dark:text-slate-50">Today ({pending.length} remaining)</h1>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setDayOffset(d => d - 1)} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-[#334155] text-slate-500">‹</button>
+          <button onClick={() => setDayOffset(0)} className="text-lg font-bold text-slate-900 dark:text-slate-50 px-2">{dateLabel()}</button>
+          <button onClick={() => setDayOffset(d => d + 1)} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-[#334155] text-slate-500">›</button>
+          <span className="text-sm text-slate-400 ml-2">({pending.length} remaining)</span>
+        </div>
         <div className="flex gap-2">
           <button onClick={resetDay} className="p-2.5 border border-slate-200 dark:border-[#475569] rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-[#334155]"><HiOutlineArrowPath className="w-4 h-4" /></button>
           <button onClick={() => setShowForm(!showForm)} className="p-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl"><HiOutlinePlus className="w-4 h-4" /></button>
